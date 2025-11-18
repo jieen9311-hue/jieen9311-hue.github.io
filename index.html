@@ -1,286 +1,375 @@
-/* ----------------------------------- */
-/* 1. 全域樣式 (Reset and Base) */
-/* ----------------------------------- */
-:root {
-    /* 顏色定義 */
-    --color-dark-bg: #121212; /* 深黑背景 */
-    --color-text-light: #CCCCCC; /* 淺灰文字 */
-    --color-accent: #E10600; /* F1 官方紅 강조色 */
-    --color-secondary-bg: #1E1E1E; /* 次要深灰背景 */
-    --color-white: #FFFFFF;
-}
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>F1 賽事情報 — Demo</title>
+  <meta name="description" content="F1 賽事總覽：積分榜、賽程、車手介紹（示範頁面）" />
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --text:#e6eef8;
+      --muted:#9fb0c8;
+      --accent:#e10600; /* F1-like red */
+      --glass: rgba(255,255,255,0.03);
+      --radius:12px;
+      --gap:18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", "Noto Sans TC", "Microsoft JhengHei", Arial;
+    }
+    [data-theme="light"]{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#0b1220;
+      --muted:#4b5563;
+      --accent:#d40000;
+      --glass: rgba(11,18,32,0.03);
+    }
 
-body {
-    background-color: var(--color-dark-bg);
-    color: var(--color-text-light);
-    /* 2. 無襯線字體，使用 Poppins 作為範例 */
-    font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
-    line-height: 1.6;
-    overflow-x: hidden; /* 防止水平滾動 */
-}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg), #071021 80%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      padding:28px;
+    }
 
-/* 連結基本樣式 */
-a {
-    color: var(--color-accent);
-    text-decoration: none;
-    transition: color 0.3s ease; /* 3. 動感設計 */
-}
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+    }
 
-a:hover {
-    color: var(--color-white); /* 懸停時變亮 */
-}
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:6px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:48px;height:48px;border-radius:10px;background:linear-gradient(45deg,var(--accent), #ff7b7b);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:0.4px}
+    .brand p{margin:0;font-size:12px;color:var(--muted)}
 
-/* 標題基本樣式 */
-h1, h2, h3 {
-    color: var(--color-white);
-    font-weight: 700; /* 強調力量感 */
-    margin-bottom: 0.5em;
-}
+    nav{display:flex;gap:10px;align-items:center}
+    .btn{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--text);
+      padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);font-weight:500}
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap:20px;
+      align-items:start;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 6px 30px rgba(2,6,23,0.5);
+    }
 
-/* 區塊內邊距 */
-.section-padding {
-    padding: 60px 5% 80px 5%;
-}
+    .hero-left h2{margin:0 0 8px 0}
+    .hero-left p{color:var(--muted);margin:0 0 12px 0}
 
-/* ----------------------------------- */
-/* 2. 導航列 (Header & Navigation) */
-/* ----------------------------------- */
-header {
-    background-color: var(--color-dark-bg);
-    padding: 15px 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--color-secondary-bg); /* 分隔線 */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
+    /* standings */
+    .standings table{
+      width:100%;border-collapse:collapse;
+      font-size:14px;
+    }
+    .standings th, .standings td{
+      text-align:left;padding:10px 8px;border-bottom:1px dashed rgba(255,255,255,0.03);
+    }
+    .pos{
+      width:44px;font-weight:700;font-size:15px;
+    }
+    .team{
+      display:flex;gap:10px;align-items:center;
+    }
+    .team .avatar{
+      width:40px;height:24px;border-radius:6px;background:linear-gradient(90deg,#ccc,#999);
+    }
+    .muted{color:var(--muted);font-size:13px}
 
-.logo h1 {
-    font-size: 1.8em;
-    letter-spacing: 2px;
-    /* 為 Logo 加上強調色 */
-    color: var(--color-accent);
-}
+    /* schedule */
+    .schedule-list{display:flex;flex-direction:column;gap:8px}
+    .race{
+      display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:var(--glass);
+    }
 
-nav ul {
-    list-style: none;
-    display: flex;
-}
+    /* drivers */
+    .drivers{
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+    }
+    .driver-card{
+      padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      display:flex;gap:12px;align-items:center;
+    }
+    .driver-photo{
+      width:72px;height:72px;border-radius:10px;background:linear-gradient(45deg,#ccc,#999);
+      flex-shrink:0;
+    }
 
-nav ul li a {
-    color: var(--color-text-light);
-    font-weight: 600;
-    padding: 10px 20px;
-    margin: 0 5px;
-    position: relative;
-    /* 懸停效果：下方紅線滑入 */
-}
+    /* small utilities */
+    .flex{display:flex;gap:10px;align-items:center}
+    .search{padding:8px 10px;border-radius:10px;background:var(--card);border:1px solid rgba(255,255,255,0.03);color:var(--text)}
+    footer{color:var(--muted);text-align:center;padding:14px 0;font-size:13px}
 
-nav ul li a::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background-color: var(--color-accent);
-    transition: width 0.3s ease; /* 3. 動感設計 */
-}
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr}
+      body{padding:18px}
+      .container{gap:14px}
+    }
 
-nav ul li a:hover::after {
-    width: 100%;
-}
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">F1</div>
+        <div>
+          <h1>F1 賽事情報（示範）</h1>
+          <p>賽季總覽 • 積分 • 賽程 • 車手</p>
+        </div>
+      </div>
 
+      <nav>
+        <input id="searchInput" class="search" placeholder="搜尋車手或賽站..." />
+        <button class="btn ghost" id="themeToggle">切換主題</button>
+      </nav>
+    </header>
 
-/* ----------------------------------- */
-/* 3. 英雄區 (Hero Section) */
-/* ----------------------------------- */
+    <section class="hero">
+      <div class="card hero-left">
+        <h2>最新賽事快訊</h2>
+        <p class="muted">示範資料 — 你可以把這個區塊改為 API 更新的實時內容或手動更新。</p>
 
-/* 4. Hero Section 照做 */
-.hero {
-    min-height: 100vh; /* 佔滿整個視窗高度 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    
-    /* 範例背景圖片 (請替換為實際圖片) */
-    background-image: url('https://via.placeholder.com/1920x1080?text=F1+Hero+Image');
-    background-size: cover;
-    background-position: center;
-}
+        <div style="display:flex;gap:12px;margin-top:12px;">
+          <div style="flex:1" class="card standings">
+            <h3 style="margin:0 0 10px 0">積分榜（車手）</h3>
+            <table id="standingsTable" aria-label="standings">
+              <thead>
+                <tr>
+                  <th class="pos">#</th>
+                  <th>車手 / 車隊</th>
+                  <th class="muted">國家</th>
+                  <th class="muted">分數</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 範例資料：可替換成真實資料 -->
+                <tr>
+                  <td class="pos">1</td>
+                  <td>
+                    <div class="team">
+                      <div class="avatar" aria-hidden></div>
+                      <div>
+                        <div style="font-weight:700">Max Verstappen</div>
+                        <div class="muted" style="font-size:12px">Red Bull Racing</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="muted">NED</td>
+                  <td class="muted">484</td>
+                </tr>
 
-/* 圖片深色遮罩 (確保文字清晰) */
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* 深色半透明遮罩 */
-    z-index: 1;
-}
+                <tr>
+                  <td class="pos">2</td>
+                  <td>
+                    <div class="team">
+                      <div class="avatar"></div>
+                      <div>
+                        <div style="font-weight:700">Lewis Hamilton</div>
+                        <div class="muted" style="font-size:12px">Mercedes</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="muted">GBR</td>
+                  <td class="muted">312</td>
+                </tr>
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    padding: 20px;
-}
+                <tr>
+                  <td class="pos">3</td>
+                  <td>
+                    <div class="team">
+                      <div class="avatar"></div>
+                      <div>
+                        <div style="font-weight:700">Charles Leclerc</div>
+                        <div class="muted" style="font-size:12px">Ferrari</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="muted">MON</td>
+                  <td class="muted">256</td>
+                </tr>
 
-.hero-content h2 {
-    font-size: 4em;
-    margin-bottom: 0.2em;
-    text-transform: uppercase;
-    letter-spacing: 5px;
-}
+              </tbody>
+            </table>
+          </div>
 
-.hero-content p {
-    font-size: 1.5em;
-    margin-bottom: 40px;
-}
+          <aside style="width:320px">
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">下一站賽程</h3>
+              <div class="schedule-list" id="scheduleList">
+                <div class="race">
+                  <div>
+                    <div style="font-weight:700">第12站 — 日本 GP</div>
+                    <div class="muted" style="font-size:13px">鈴鹿 • 2025-09-07</div>
+                  </div>
+                  <div class="muted">懸念：乾地</div>
+                </div>
 
-/* CTA 按鈕 */
-.cta-button {
-    display: inline-block;
-    background-color: var(--color-accent);
-    color: var(--color-white);
-    padding: 15px 30px;
-    border-radius: 5px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(225, 6, 0, 0.4); /* 3. 動感設計：紅色陰影 */
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
+                <div class="race">
+                  <div>
+                    <div style="font-weight:700">第13站 — 新加坡 GP</div>
+                    <div class="muted" style="font-size:13px">濱海灣 • 2025-09-21</div>
+                  </div>
+                  <div class="muted">夜賽</div>
+                </div>
 
-.cta-button:hover {
-    background-color: #ff3333; /* 略微變亮的紅色 */
-    transform: translateY(-3px); /* 3. 動感設計：輕微上移 */
-    color: var(--color-white);
-}
+              </div>
+            </div>
 
-/* ----------------------------------- */
-/* 4. 其他區塊樣式 (News, Calendar, Drivers) */
-/* ----------------------------------- */
+            <div style="height:12px"></div>
 
-/* 新聞卡片網格 */
-.news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">快速連結</h3>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn">官方賽事日曆</button>
+                <button class="btn ghost">車隊官網</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
 
-.news-card {
-    background-color: var(--color-secondary-bg);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 3. 動感設計 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+      <div class="card" aria-hidden>
+        <h3 style="margin-top:0">車手焦點</h3>
+        <p class="muted">以下為示範車手卡片 — 可替換為照片與更多統計數據。</p>
 
-.news-card:hover {
-    transform: translateY(-5px); /* 3. 動感設計：輕微上浮 */
-    box-shadow: 0 10px 20px rgba(225, 6, 0, 0.2); /* 懸停時，紅色陰影更明顯 */
-}
+        <div class="drivers" id="driversGrid" style="margin-top:12px">
+          <div class="driver-card">
+            <div class="driver-photo" aria-hidden></div>
+            <div>
+              <div style="font-weight:800">L. Hamilton</div>
+              <div class="muted">Mercedes • GBR</div>
+              <div class="muted" style="margin-top:6px;font-size:13px">勝場：103 • 生涯積分：5780</div>
+            </div>
+          </div>
 
-.news-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
+          <div class="driver-card">
+            <div class="driver-photo"></div>
+            <div>
+              <div style="font-weight:800">M. Verstappen</div>
+              <div class="muted">Red Bull • NED</div>
+              <div class="muted" style="margin-top:6px;font-size:13px">勝場：56 • 生涯積分：4089</div>
+            </div>
+          </div>
 
-.news-card h4 {
-    margin-top: 15px;
-    padding: 0 15px;
-    color: var(--color-accent);
-}
+          <div class="driver-card">
+            <div class="driver-photo"></div>
+            <div>
+              <div style="font-weight:800">C. Leclerc</div>
+              <div class="muted">Ferrari • MON</div>
+              <div class="muted" style="margin-top:6px;font-size:13px">勝場：6 • 生涯積分：1062</div>
+            </div>
+          </div>
 
-.news-card p {
-    padding: 0 15px 15px 15px;
-    font-size: 0.9em;
-}
+        </div>
+      </div>
+    </section>
 
-/* 賽事日曆表格 */
-.dark-bg {
-    background-color: var(--color-secondary-bg);
-}
+    <section class="card">
+      <h3 style="margin:0 0 8px 0">完整賽程（示範）</h3>
+      <p class="muted" style="margin:0 0 12px 0">你可以把下表換成真實資料或用 JS 從 API 抓取並填入表格。</p>
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+      <div style="overflow:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:10px">站次</th>
+              <th style="text-align:left;padding:10px">賽站</th>
+              <th style="text-align:left;padding:10px">地點</th>
+              <th style="text-align:left;padding:10px">日期</th>
+            </tr>
+          </thead>
+          <tbody id="fullSchedule">
+            <tr><td style="padding:10px">1</td><td style="padding:10px">澳洲 GP</td><td style="padding:10px">墨爾本</td><td style="padding:10px">2025-03-16</td></tr>
+            <tr><td style="padding:10px">2</td><td style="padding:10px">沙地 GP</td><td style="padding:10px">吉達</td><td style="padding:10px">2025-03-30</td></tr>
+            <tr><td style="padding:10px">3</td><td style="padding:10px">日本 GP</td><td style="padding:10px">鈴鹿</td><td style="padding:10px">2025-09-07</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-table th, table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #333;
-}
+    <footer>
+      範例頁面 • 想要加入即時資料或 API，我可以幫你接（例如 Ergast API / 官方資料來源）並替你處理前端渲染。
+    </footer>
+  </div>
 
-table th {
-    background-color: #2a2a2a;
-    color: var(--color-accent);
-    text-transform: uppercase;
-}
+  <script>
+    // 簡單互動：主題切換 & 搜尋過濾
+    const themeBtn = document.getElementById('themeToggle');
+    const body = document.body;
+    themeBtn.addEventListener('click', () => {
+      const current = body.getAttribute('data-theme');
+      body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    });
 
-table tr:hover {
-    background-color: #252525; /* 懸停時變色 */
-}
+    // 範例搜尋：搜尋車手或賽站（會搜尋表格 &卡片）
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      filterStandings(q);
+      filterDrivers(q);
+      filterSchedule(q);
+    });
 
-/* 車隊卡片 */
-.team-cards-container {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 20px;
-}
+    function filterStandings(q){
+      const rows = document.querySelectorAll('#standingsTable tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+    function filterDrivers(q){
+      const cards = document.querySelectorAll('#driversGrid .driver-card');
+      cards.forEach(card=>{
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+    function filterSchedule(q){
+      const rows = document.querySelectorAll('#fullSchedule tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
 
-.team-card {
-    background-color: var(--color-secondary-bg);
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    border-left: 5px solid; /* 用於區分車隊顏色 */
-}
+    // 可擴充：若要從 API 載入資料，放在此處做 fetch 並填入 DOM
+    // 範例： fetch('...').then(r=>r.json()).then(data => renderStandings(data));
 
-.team-card h4 {
-    margin-bottom: 10px;
-}
-
-/* 車隊特定顏色條 */
-.red-theme { border-left-color: #E10600; }
-.blue-theme { border-left-color: #00A6FB; }
-
-/* ----------------------------------- */
-/* 5. 頁腳 (Footer) */
-/* ----------------------------------- */
-footer {
-    background-color: #000000; /* 更深的黑色 */
-    padding: 30px 5%;
-    text-align: center;
-    border-top: 2px solid var(--color-accent); /* 紅色頂線 */
-    font-size: 0.9em;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.social-links a {
-    margin: 0 10px;
-    color: var(--color-text-light);
-}
-
-.social-links a:hover {
-    color: var(--color-accent);
-}
+  </script>
+</body>
+</html>
