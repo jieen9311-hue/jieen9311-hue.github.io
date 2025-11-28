@@ -1,128 +1,383 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F1 React App</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background: #0a0a0a; }
-  </style>
-</head>
-<body class="text-white">
-  <div id="root"></div>
+import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Trophy, Users, Calendar, TrendingUp, Flag, Award } from "lucide-react";
+import { drivers2025, teams2025, races2025, type Driver, type Team, type Race } from "@/lib/f1-data";
 
-  <script type="text/babel">
-    const teams = {
-      Ferrari: {
-        desc: "Ferrari 是歷史最悠久、最具代表性的 F1 車隊。",
-        img: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Scuderia_Ferrari_Logo.svg/1200px-Scuderia_Ferrari_Logo.svg.png"
-      },
-      Mercedes: {
-        desc: "Mercedes 在混合動力年代稱霸多年。",
-        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Mercedes_AMG_Petronas_F1_Logo.svg/2560px-Mercedes_AMG_Petronas_F1_Logo.svg.png"
-      },
-      "Red Bull": {
-        desc: "Red Bull 以空力設計與強勢表現著名。",
-        img: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0d/Red_Bull_Racing_logo.svg/2560px-Red_Bull_Racing_logo.svg.png"
-      },
-      McLaren: {
-        desc: "McLaren 傳統強隊，近年強勢回歸。",
-        img: "https://upload.wikimedia.org/wikipedia/en/thumb/8/83/McLaren_Racing_logo.svg/2560px-McLaren_Racing_logo.svg.png"
-      }
-    };
+export default function Home() {
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
-    function TeamSection() {
-      const [selected, setSelected] = React.useState(null);
-      return (
-        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-bold mb-4">🏁 F1 車隊互動展示</h2>
-          <div className="flex flex-wrap gap-3 mb-4">
-            {Object.keys(teams).map(team => (
-              <button key={team} onClick={() => setSelected(team)} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-xl">{team}</button>
-            ))}
+  const filteredDrivers = selectedTeam
+    ? drivers2025.filter((driver) => driver.team === selectedTeam)
+    : drivers2025;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/hero-f1-car.png"
+            alt="F1 Racing Car"
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        </div>
+        
+        <div className="container relative z-10 text-center">
+          <Badge className="mb-4 text-lg px-4 py-2 bg-primary/20 border-primary hover:bg-primary/30">
+            2025 賽季
+          </Badge>
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight">
+            F1 資訊中心
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            探索 Formula 1 世界錦標賽的精彩賽事、頂尖車隊與傳奇車手
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button size="lg" className="gap-2">
+              <Trophy className="w-5 h-5" />
+              查看排行榜
+            </Button>
+            <Button size="lg" variant="outline" className="gap-2">
+              <Calendar className="w-5 h-5" />
+              賽程表
+            </Button>
           </div>
-          {selected && (
-            <div className="mt-4">
-              <img src={teams[selected].img} className="w-40 mb-4" />
-              <p className="text-lg">{teams[selected].desc}</p>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-card/50">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Trophy className="w-5 h-5" />
+                  車手
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">{drivers2025.length}</div>
+                <p className="text-sm text-muted-foreground">參賽車手</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Users className="w-5 h-5" />
+                  車隊
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">{teams2025.length}</div>
+                <p className="text-sm text-muted-foreground">參賽車隊</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Flag className="w-5 h-5" />
+                  賽事
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">{races2025.length}</div>
+                <p className="text-sm text-muted-foreground">本賽季賽事</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Award className="w-5 h-5" />
+                  領先者
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold">{drivers2025[0].points}</div>
+                <p className="text-sm text-muted-foreground">{drivers2025[0].name}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <section className="py-16">
+        <div className="container">
+          <Tabs defaultValue="standings" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+              <TabsTrigger value="standings" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                排行榜
+              </TabsTrigger>
+              <TabsTrigger value="teams" className="gap-2">
+                <Users className="w-4 h-4" />
+                車隊
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="gap-2">
+                <Calendar className="w-4 h-4" />
+                賽程
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Standings Tab */}
+            <TabsContent value="standings" className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold mb-2">2025 車手積分榜</h2>
+                <p className="text-muted-foreground">即時更新的車手排名與積分統計</p>
+              </div>
+
+              {/* Team Filter */}
+              <div className="flex flex-wrap gap-2 justify-center mb-8">
+                <Button
+                  variant={selectedTeam === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedTeam(null)}
+                >
+                  全部車隊
+                </Button>
+                {teams2025.map((team) => (
+                  <Button
+                    key={team.id}
+                    variant={selectedTeam === team.name ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedTeam(team.name)}
+                    style={{
+                      borderColor: selectedTeam === team.name ? team.color : undefined,
+                    }}
+                  >
+                    {team.name}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="grid gap-4">
+                {filteredDrivers.map((driver, index) => (
+                  <Card
+                    key={driver.id}
+                    className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-6">
+                        <div className="text-4xl font-bold text-primary w-12 text-center">
+                          {index + 1}
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-2xl font-bold">{driver.name}</h3>
+                            <Badge variant="outline">{driver.nationality}</Badge>
+                          </div>
+                          <p className="text-muted-foreground">{driver.team}</p>
+                        </div>
+
+                        <div className="hidden md:flex gap-8 text-center">
+                          <div>
+                            <div className="text-2xl font-bold">{driver.wins}</div>
+                            <div className="text-sm text-muted-foreground">勝場</div>
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold">{driver.podiums}</div>
+                            <div className="text-sm text-muted-foreground">頒獎台</div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-primary">{driver.points}</div>
+                          <div className="text-sm text-muted-foreground">積分</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Teams Tab */}
+            <TabsContent value="teams" className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold mb-2">2025 車隊陣容</h2>
+                <p className="text-muted-foreground">探索各支車隊的詳細資訊與車手陣容</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teams2025.map((team) => (
+                  <Card
+                    key={team.id}
+                    className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer overflow-hidden group"
+                  >
+                    <div
+                      className="h-2 transition-all group-hover:h-3"
+                      style={{ backgroundColor: team.color }}
+                    />
+                    <CardHeader>
+                      <CardTitle className="text-2xl">{team.name}</CardTitle>
+                      <CardDescription>{team.fullName}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">基地：</span>
+                          <span className="font-medium">{team.base}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">車隊總監：</span>
+                          <span className="font-medium">{team.teamChief}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">底盤：</span>
+                          <span className="font-medium">{team.chassis}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">動力單元：</span>
+                          <span className="font-medium">{team.powerUnit}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">車隊積分</span>
+                          <span className="text-2xl font-bold text-primary">{team.points}</span>
+                        </div>
+                        <div className="space-y-1">
+                          {team.drivers.map((driver, idx) => (
+                            <Badge key={idx} variant="secondary" className="mr-1">
+                              {driver}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Calendar Tab */}
+            <TabsContent value="calendar" className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold mb-2">2025 賽季賽程</h2>
+                <p className="text-muted-foreground">完整的賽事日曆與賽道資訊</p>
+              </div>
+
+              <div className="grid gap-4">
+                {races2025.map((race) => (
+                  <Card
+                    key={race.id}
+                    className={`bg-card/80 backdrop-blur border-border transition-all hover:scale-[1.02] cursor-pointer ${
+                      race.status === "completed"
+                        ? "opacity-70 hover:opacity-100"
+                        : "hover:border-primary/50"
+                    }`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-6">
+                        <div className="text-3xl font-bold text-primary w-16 text-center">
+                          R{race.round}
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-2xl font-bold">{race.name}</h3>
+                            <Badge
+                              variant={race.status === "completed" ? "secondary" : "default"}
+                            >
+                              {race.status === "completed" ? "已完賽" : "即將舉行"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>{race.circuit}</span>
+                            <span>•</span>
+                            <span>{race.country}</span>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-lg font-semibold mb-1">{race.date}</div>
+                          {race.winner && (
+                            <div className="flex items-center gap-1 text-sm text-primary">
+                              <Trophy className="w-4 h-4" />
+                              {race.winner}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-16 bg-card/50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">賽事精彩瞬間</h2>
+            <p className="text-muted-foreground text-lg">感受 F1 賽車的速度與激情</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+              <img
+                src="/team-garage.png"
+                alt="Team Garage"
+                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
+                <h3 className="text-xl font-bold">車隊維修站</h3>
+              </div>
             </div>
-          )}
-        </div>
-      );
-    }
 
-    function DriverCard({ name, team, img }) {
-      return (
-        <div className="bg-neutral-800 p-4 rounded-xl shadow hover:scale-105 transition">
-          <img src={img} className="rounded-xl mb-3" />
-          <h3 className="text-xl font-bold">{name}</h3>
-          <p className="text-red-400">{team}</p>
-        </div>
-      );
-    }
+            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+              <img
+                src="/racing-circuit.png"
+                alt="Racing Circuit"
+                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
+                <h3 className="text-xl font-bold">賽道風光</h3>
+              </div>
+            </div>
 
-    function DriversSection() {
-      const drivers = [
-        { name: "Max Verstappen", team: "Red Bull", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Max_Verstappen_2017_Malaysia_3.jpg/440px-Max_Verstappen_2017_Malaysia_3.jpg" },
-        { name: "Charles Leclerc", team: "Ferrari", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Charles_Leclerc_2019.jpg/440px-Charles_Leclerc_2019.jpg" },
-        { name: "Lewis Hamilton", team: "Mercedes", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Lewis_Hamilton_2016_Malaysia_2.jpg/440px-Lewis_Hamilton_2016_Malaysia_2.jpg" }
-      ];
-      return (
-        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-bold mb-4">🏎️ 車手介紹</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {drivers.map(d => <DriverCard key={d.name} {...d} />)}
+            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+              <img
+                src="/podium-celebration.png"
+                alt="Podium Celebration"
+                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
+                <h3 className="text-xl font-bold">頒獎台慶祝</h3>
+              </div>
+            </div>
           </div>
         </div>
-      );
-    }
+      </section>
 
-    function RaceCalendar() {
-      const races = [
-        "巴林站", "沙烏地阿拉伯站", "澳洲站", "日本站", "中國站", "邁阿密站"
-      ];
-      return (
-        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
-          <h2 className="text-2xl font-bold mb-4">📅 2025 賽曆（示例）</h2>
-          <ul className="list-disc pl-6 text-lg">
-            {races.map(r => <li key={r}>{r}</li>)}
-          </ul>
+      {/* Footer */}
+      <footer className="py-12 border-t border-border">
+        <div className="container text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Flag className="w-6 h-6 text-primary" />
+            <span className="text-xl font-bold">F1 資訊中心</span>
+          </div>
+          <p className="text-muted-foreground">
+            © 2025 F1 資訊中心 - 探索 Formula 1 的精彩世界
+          </p>
         </div>
-      );
-    }
-
-    function Timer() {
-      const [sec, setSec] = React.useState(0);
-      React.useEffect(() => {
-        const t = setInterval(() => setSec(s => s + 1), 1000);
-        return () => clearInterval(t);
-      }, []);
-      return (
-        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6 text-center">
-          <h2 className="text-2xl font-bold mb-2">⏱️ 計時器</h2>
-          <p className="text-4xl">{sec}s</p>
-        </div>
-      );
-    }
-
-    function App() {
-      return (
-        <div className="max-w-5xl mx-auto p-6">
-          <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-red-600 to-red-900 py-4 rounded-xl">F1 React 互動展示</h1>
-          <Timer />
-          <TeamSection />
-          <DriversSection />
-          <RaceCalendar />
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
-</body>
-</html>
-
+      </footer>
+    </div>
+  );
+}
