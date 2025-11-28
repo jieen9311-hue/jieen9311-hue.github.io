@@ -1,4 +1,5 @@
 // F1-GitHub-Pages-Site.jsx
+// 🔥 Enhanced UI Version — Improved styling, spacing, gradients, shadows, and layout aesthetics
 // Single-file React component (Tailwind-ready) suitable for preview and direct use in a GitHub Pages React app.
 // Features:
 // - Responsive layout
@@ -61,7 +62,7 @@ export default function F1Site() {
   return (
     <div className={dark ? "min-h-screen bg-gray-900 text-gray-100" : "min-h-screen bg-gray-50 text-gray-900"}>
       <div className="max-w-6xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-6">
+        <header className="flex items-center justify-between mb-10 bg-gradient-to-r from-red-600 to-black text-white p-6 rounded-2xl shadow-xl">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">F1 Info Hub</h1>
             <p className="text-sm opacity-80">輕量級 F1 門戶 —  賽程、車手、車隊與積分一覽</p>
@@ -84,9 +85,9 @@ export default function F1Site() {
           </div>
         </header>
 
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <section className="lg:col-span-2 space-y-6">
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl shadow-sm border">
+            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl shadow-lg border bg-white/60 backdrop-blur dark:bg-gray-800/60">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">車手排名</h2>
                 <div className="flex gap-2 items-center">
@@ -106,7 +107,7 @@ export default function F1Site() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredDrivers.map((d) => (
-                  <motion.article key={d.id} whileHover={{ scale: 1.02 }} className="p-3 rounded-xl border flex items-center gap-3">
+                  <motion.article key={d.id} whileHover={{ scale: 1.02 }} className="p-4 rounded-xl border shadow-md bg-white/70 dark:bg-gray-800/70 flex items-center gap-4 hover:shadow-xl transition-all">
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold">{d.name}</h3>
@@ -122,7 +123,7 @@ export default function F1Site() {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-2xl shadow-sm border">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 rounded-2xl shadow-lg border bg-white/60 backdrop-blur dark:bg-gray-800/60">
               <h2 className="text-xl font-semibold mb-3">最新賽事動態</h2>
               <ul className="space-y-2">
                 <li className="flex items-start gap-3">
@@ -144,7 +145,7 @@ export default function F1Site() {
 
           </section>
 
-          <aside className="space-y-6">
+          <aside className="space-y-8">
             <div className="p-4 rounded-2xl border shadow-sm">
               <h3 className="font-semibold mb-3">即將到來的比賽</h3>
               <ul className="space-y-2">
@@ -181,7 +182,7 @@ export default function F1Site() {
           </aside>
         </main>
 
-        <footer className="mt-8 text-center opacity-70 text-sm">
+        <footer className="mt-12 text-center opacity-70 text-sm"
           <div>這是示範網站 — 若要串接真實資料，可改用 Ergast/F1 API 或官方資料源。</div>
           <div className="mt-2">部署提示：將此檔案整合成 React app (create-react-app / Vite) 後推到 GitHub 並啟用 GitHub Pages。</div>
         </footer>
@@ -209,3 +210,5 @@ Deployment steps (簡短說明)：
 
 要我幫你把此專案轉成「一個可以直接放到 GitHub Pages 的靜態資料夾 (index.html + assets)」或直接產生完整 repo 結構，請告訴我你想要哪一種（我可以把檔案輸出為可下載的 zip）。
 */
+
+           
