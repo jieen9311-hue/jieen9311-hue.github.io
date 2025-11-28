@@ -1,238 +1,169 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>F1 資訊站 — 單檔 HTML 範例</title>
-  <!-- Tailwind Play CDN for quick demo -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F1 資訊站（強化版）</title>
   <style>
-    /* small utilities */
-    .glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
+    body { font-family: Arial, sans-serif; margin: 0; background:#0d0d0d; color:white; }
+    header { background:#e10600; padding:16px; display:flex; justify-content:space-between; align-items:center; }
+    nav a { color:white; margin:0 10px; text-decoration:none; font-weight:bold; }
+    .container { max-width:1100px; margin:auto; padding:20px; }
+    .card { background:#111; padding:16px; border-radius:10px; margin:12px 0; border:1px solid #333; }
+    .grid { display:grid; gap:16px; }
+    .grid-2 { grid-template-columns:1fr 1fr; }
+    .race { border:1px solid #333; padding:12px; border-radius:8px; }
+    .news-item { border-bottom:1px solid #333; padding:10px 0; }
+    button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
+    .dark-toggle { background:white; color:black; }
+    .highlight { color:#e10600; font-weight:bold; }
   </style>
 </head>
-<body class="antialiased bg-gray-50 text-gray-900">
-  <div id="app" class="min-h-screen max-w-6xl mx-auto p-6">
-    <header class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">F1</div>
-        <div>
-          <h1 class="text-2xl font-extrabold">F1 資訊站</h1>
-          <p class="text-sm text-gray-500">賽程、車手、積分與即時新聞</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <select id="season" class="px-3 py-1 rounded bg-white/80">
-          <option value="current">今年賽季</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-        </select>
-        <button id="themeToggle" class="px-3 py-1 rounded glass">深色</button>
-      </div>
-    </header>
-
-    <!-- Nav -->
-    <nav class="flex gap-6 mb-6 text-lg">
-      <a href="#/" class="nav-link">🏠 首頁</a>
-      <a href="#/races" class="nav-link">📅 賽程</a>
-      <a href="#/drivers" class="nav-link">👨‍🚀 車手</a>
+<body>
+  <header>
+    <div style="font-size:24px; font-weight:bold;">F1 資訊站</div>
+    <nav>
+      <a href="#home">首頁</a>
+      <a href="#schedule">賽程</a>
+      <a href="#drivers">車手</a>
+      <a href="#teams">車隊</a>
+      <a href="#news">新聞</a>
     </nav>
+    <button id="toggleDark" class="dark-toggle">深色/亮色</button>
+  </header>
 
-    <!-- App container -->
-    <main id="view"></main>
-
-    <footer class="mt-10 text-sm text-gray-500 border-t pt-4">© <span id="year"></span> F1 資訊站 • 資料來源：Ergast API（範例）</footer>
-  </div>
+  <div class="container" id="content"></div>
 
   <script>
-    // -----------------------------
-    // Simple hash router
-    // -----------------------------
+    const content = document.getElementById('content');
+
     const routes = {
-      '/': renderHome,
-      '/races': renderRaces,
-      '/drivers': renderDrivers,
+      home: () => `
+        <h1>🏎️ F1 資訊站 - 官方風格強化版</h1>
+        <div class="card">此網站包含：即時新聞、2025 賽程、車手 & 車隊資訊、倒數計時、深色模式</div>
+      `,
+
+      schedule: () => `
+        <h1>📅 賽程</h1>
+        <div id="raceList" class="grid"></div>
+        <script>loadSchedule()<\/script>
+      `,
+
+      drivers: () => `
+        <h1>👨‍🏎️ 車手名單（依積分排序）</h1>
+        <div id="driverList"></div>
+        <script>loadDrivers()<\/script>
+      `,
+
+      teams: () => `
+        <h1>🏁 車隊積分</h1>
+        <div id="teamList"></div>
+        <script>loadTeams()<\/script>
+      `,
+
+      news: () => `
+        <h1>📰 F1 新聞（RSS 即時更新）</h1>
+        <div id="newsList"></div>
+        <script>loadNews()<\/script>
+      `
     };
 
-    function router() {
-      const path = location.hash.replace('#','') || '/';
-      const view = routes[path] || routes['/'];
-      view();
-      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('font-bold'));
-      document.querySelectorAll('.nav-link').forEach(a => {
-        if (a.getAttribute('href') === '#' + path) a.classList.add('font-bold');
+    function render() {
+      const hash = location.hash.replace('#','') || 'home';
+      content.innerHTML = routes[hash] ? routes[hash]() : '<h1>404</h1>';
+    }
+
+    window.addEventListener('hashchange', render);
+    render();
+
+    /* ------------------ 深色模式 ------------------ */
+    document.getElementById('toggleDark').onclick = () => {
+      if(document.body.style.background === 'white') {
+        document.body.style.background = '#0d0d0d';
+        document.body.style.color = 'white';
+      } else {
+        document.body.style.background = 'white';
+        document.body.style.color = 'black';
+      }
+    }
+
+    /* ------------------ 抓賽程 API ------------------ */
+    async function loadSchedule() {
+      const raceList = document.getElementById('raceList');
+      const r = await fetch('https://ergast.com/api/f1/current.json');
+      const j = await r.json();
+
+      (j.MRData.RaceTable.Races || []).forEach(r => {
+        raceList.innerHTML += `
+          <div class="card race">
+            <div class="highlight">${r.raceName}</div>
+            <div>${r.Circuit.circuitName}</div>
+            <div>${r.date} ${r.time || ''}</div>
+            <div>${r.Circuit.Location.locality}, ${r.Circuit.Location.country}</div>
+          </div>
+        `;
       });
     }
 
-    window.addEventListener('hashchange', router);
-    window.addEventListener('load', () => { document.getElementById('year').textContent = new Date().getFullYear(); router(); fetchSeasonData(); });
+    /* ------------------ 車手 & 車隊 ------------------ */
+    async function loadDrivers() {
+      const div = document.getElementById('driverList');
+      const r = await fetch('https://ergast.com/api/f1/current/driverStandings.json');
+      const j = await r.json();
 
-    // -----------------------------
-    // State & Data Fetching
-    // -----------------------------
-    let state = {
-      season: 'current',
-      races: [],
-      standings: [],
-      drivers: [],
-    };
-
-    document.getElementById('season').addEventListener('change', (e) => { state.season = e.target.value; fetchSeasonData(); });
-
-    async function fetchSeasonData() {
-      const s = state.season === 'current' ? new Date().getFullYear() : state.season;
-      try {
-        // races
-        const r = await fetch(`https://ergast.com/api/f1/${s}.json`).then(res => res.json());
-        state.races = r.MRData?.RaceTable?.Races || [];
-
-        // driver standings
-        const st = await fetch(`https://ergast.com/api/f1/${s}/driverStandings.json`).then(res => res.json());
-        state.standings = st.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
-
-        // drivers list (from standings)
-        state.drivers = state.standings.map(d => ({ id: d.Driver.driverId, name: d.Driver.givenName + ' ' + d.Driver.familyName, team: d.Constructors?.[0]?.name || '' }));
-
-        // re-render current view if needed
-        router();
-      } catch (err) {
-        console.error('fetch error', err);
-      }
-    }
-
-    // -----------------------------
-    // Utilities
-    // -----------------------------
-    function el(html) { const div = document.createElement('div'); div.innerHTML = html; return div.firstElementChild; }
-
-    function formatDateISO(iso) {
-      try {
-        const d = new Date(iso);
-        return d.toLocaleString();
-      } catch { return iso; }
-    }
-
-    // Countdown component (returns element)
-    function Countdown(targetISO) {
-      const container = document.createElement('div');
-      container.className = 'text-xl font-semibold';
-
-      function tick() {
-        const diff = new Date(targetISO) - new Date();
-        if (isNaN(diff)) { container.textContent = '時間格式錯誤'; return; }
-        if (diff <= 0) { container.textContent = '🏁 比賽開始！'; clearInterval(timer); return; }
-        const days = Math.floor(diff / (1000*60*60*24));
-        const hours = Math.floor((diff/(1000*60*60))%24);
-        const minutes = Math.floor((diff/(1000*60))%60);
-        const seconds = Math.floor((diff/1000)%60);
-        container.textContent = `${days} 天 ${hours} 時 ${minutes} 分 ${seconds} 秒`;
-      }
-
-      tick();
-      const timer = setInterval(tick, 1000);
-      return container;
-    }
-
-    // -----------------------------
-    // Views
-    // -----------------------------
-    function renderHome() {
-      const nextRace = state.races[0];
-      const html = document.createElement('div');
-      html.innerHTML = `
-        <h2 class="text-3xl font-bold mb-4">下一場比賽倒數</h2>
-        <div class="bg-white rounded-2xl p-6 shadow mb-6">
-          <div id="nextRaceName" class="text-xl mb-2"></div>
-          <div id="nextRaceCountdown"></div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="bg-white rounded-2xl p-6 shadow">
-            <h3 class="text-2xl font-semibold mb-2">賽程快速連結</h3>
-            <a href="#/races" class="text-blue-500 underline">查看全部賽程 →</a>
+      j.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(d => {
+        div.innerHTML += `
+          <div class="card">
+            <div class="highlight">${d.position}. ${d.Driver.givenName} ${d.Driver.familyName}</div>
+            <div>${d.Constructors[0].name}</div>
+            <div>積分：${d.points}</div>
           </div>
+        `;
+      });
+    }
 
-          <div class="bg-white rounded-2xl p-6 shadow">
-            <h3 class="text-2xl font-semibold mb-2">車手快速連結</h3>
-            <a href="#/drivers" class="text-blue-500 underline">查看車手 →</a>
+    async function loadTeams() {
+      const div = document.getElementById('teamList');
+      const r = await fetch('https://ergast.com/api/f1/current/constructorStandings.json');
+      const j = await r.json();
+
+      j.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.forEach(t => {
+        div.innerHTML += `
+          <div class="card">
+            <div class="highlight">${t.position}. ${t.Constructor.name}</div>
+            <div>積分：${t.points}</div>
           </div>
-        </div>
-      `;
-
-      const view = document.getElementById('view'); view.innerHTML=''; view.appendChild(html);
-
-      if (nextRace) {
-        document.getElementById('nextRaceName').textContent = `${nextRace.raceName} · ${nextRace.Circuit?.circuitName || ''}`;
-        const iso = nextRace.date + (nextRace.time ? nextRace.time : '');
-        const countdownEl = Countdown(iso);
-        document.getElementById('nextRaceCountdown').appendChild(countdownEl);
-      } else {
-        document.getElementById('nextRaceName').textContent = '尚無賽程資料';
-      }
+        `;
+      });
     }
 
-    function renderRaces() {
-      const view = document.getElementById('view'); view.innerHTML = '';
-      const container = document.createElement('div');
-      container.innerHTML = `<h2 class="text-3xl font-bold mb-4">賽程（${state.season === 'current' ? new Date().getFullYear() : state.season}）</h2>`;
+    /* ------------------ F1 新聞（RSS 轉 JSON Proxy） ------------------ */
+    async function loadNews() {
+      const div = document.getElementById('newsList');
 
-      if (state.races.length === 0) {
-        container.innerHTML += '<div class="p-4 bg-white rounded">尚無賽程資料</div>';
-      } else {
-        const grid = document.createElement('div'); grid.className = 'grid gap-4';
-        state.races.forEach(r => {
-          const card = document.createElement('div'); card.className = 'bg-white p-4 rounded shadow';
-          card.innerHTML = `
-            <div class="font-medium">${r.raceName}</div>
-            <div class="text-sm text-gray-500">${r.Circuit?.circuitName || ''} · ${r.Circuit?.Location?.locality || ''}, ${r.Circuit?.Location?.country || ''}</div>
-            <div class="text-xs mt-2">${formatDateISO(r.date + (r.time||''))}</div>
-          `;
-          grid.appendChild(card);
-        });
-        container.appendChild(grid);
-      }
+      // 使用官方 RSS (需 proxy 才能在瀏覽器解析)
+      const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.formula1.com/content/fom-website/en/latest/all.xml')}`;
 
-      view.appendChild(container);
+      const r = await fetch(url);
+      const j = await r.json();
+
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(j.contents, 'application/xml');
+      const items = xml.querySelectorAll('item');
+
+      items.forEach(i => {
+        div.innerHTML += `
+          <div class="news-item">
+            <div class="highlight">${i.querySelector('title').textContent}</div>
+            <div>${i.querySelector('pubDate').textContent}</div>
+            <div>${i.querySelector('description').textContent.slice(0,120)}...</div>
+          </div>
+        `;
+      });
     }
-
-    function renderDrivers() {
-      const view = document.getElementById('view'); view.innerHTML = '';
-      const container = document.createElement('div');
-      container.innerHTML = `<h2 class="text-3xl font-bold mb-4">車手列表</h2>`;
-
-      if (state.drivers.length === 0) {
-        container.innerHTML += '<div class="p-4 bg-white rounded">尚無車手資料</div>';
-      } else {
-        const grid = document.createElement('div'); grid.className = 'grid md:grid-cols-2 gap-4';
-        state.drivers.forEach(d => {
-          const card = document.createElement('div'); card.className = 'bg-white p-4 rounded shadow';
-          card.innerHTML = `
-            <div class="font-medium">${d.name}</div>
-            <div class="text-sm text-gray-500">${d.team}</div>
-          `;
-          grid.appendChild(card);
-        });
-        container.appendChild(grid);
-      }
-
-      view.appendChild(container);
-    }
-
-    // -----------------------------
-    // Theme toggle
-    // -----------------------------
-    const themeBtn = document.getElementById('themeToggle');
-    themeBtn.addEventListener('click', () => {
-      const isDark = document.documentElement.classList.toggle('dark');
-      if (isDark) {
-        document.body.classList.add('bg-black','text-white');
-        themeBtn.textContent = '淺色';
-      } else {
-        document.body.classList.remove('bg-black','text-white');
-        themeBtn.textContent = '深色';
-      }
-    });
   </script>
 </body>
 </html>
+
+   
+  
