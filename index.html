@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Users, Calendar, TrendingUp, Flag, Award } from "lucide-react";
+import { Trophy, Users, Calendar, TrendingUp, Flag, Award, ChevronRight } from "lucide-react";
 import { drivers2025, teams2025, races2025, type Driver, type Team, type Race } from "@/lib/f1-data";
 
 export default function Home() {
@@ -19,32 +19,32 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden mt-16">
         <div className="absolute inset-0 z-0">
           <img
             src="/hero-f1-car.png"
             alt="F1 Racing Car"
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
         </div>
         
-        <div className="container relative z-10 text-center">
-          <Badge className="mb-4 text-lg px-4 py-2 bg-primary/20 border-primary hover:bg-primary/30">
+        <div className="container relative z-10 text-center px-4">
+          <Badge className="mb-4 text-lg px-4 py-2 bg-primary/20 border-primary hover:bg-primary/30 animate-pulse">
             2025 賽季
           </Badge>
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight text-white drop-shadow-lg">
             F1 資訊中心
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-8 drop-shadow">
             探索 Formula 1 世界錦標賽的精彩賽事、頂尖車隊與傳奇車手
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" className="gap-2">
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90 text-white">
               <Trophy className="w-5 h-5" />
               查看排行榜
             </Button>
-            <Button size="lg" variant="outline" className="gap-2">
+            <Button size="lg" variant="outline" className="gap-2 border-white text-white hover:bg-white/10">
               <Calendar className="w-5 h-5" />
               賽程表
             </Button>
@@ -53,8 +53,8 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-card/50">
-        <div className="container">
+      <section className="py-16 bg-card/50 border-y border-border">
+        <div className="container px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-105">
               <CardHeader>
@@ -113,25 +113,25 @@ export default function Home() {
 
       {/* Main Content */}
       <section className="py-16">
-        <div className="container">
+        <div className="container px-4">
           <Tabs defaultValue="standings" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-12">
               <TabsTrigger value="standings" className="gap-2">
                 <Trophy className="w-4 h-4" />
-                排行榜
+                <span className="hidden sm:inline">排行榜</span>
               </TabsTrigger>
               <TabsTrigger value="teams" className="gap-2">
                 <Users className="w-4 h-4" />
-                車隊
+                <span className="hidden sm:inline">車隊</span>
               </TabsTrigger>
               <TabsTrigger value="calendar" className="gap-2">
                 <Calendar className="w-4 h-4" />
-                賽程
+                <span className="hidden sm:inline">賽程</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Standings Tab */}
-            <TabsContent value="standings" className="space-y-6">
+            <TabsContent value="standings" className="space-y-8">
               <div className="text-center mb-8">
                 <h2 className="text-4xl font-bold mb-2">2025 車手積分榜</h2>
                 <p className="text-muted-foreground">即時更新的車手排名與積分統計</p>
@@ -143,6 +143,7 @@ export default function Home() {
                   variant={selectedTeam === null ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedTeam(null)}
+                  className="transition-all"
                 >
                   全部車隊
                 </Button>
@@ -152,8 +153,11 @@ export default function Home() {
                     variant={selectedTeam === team.name ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedTeam(team.name)}
+                    className="transition-all"
                     style={{
-                      borderColor: selectedTeam === team.name ? team.color : undefined,
+                      backgroundColor: selectedTeam === team.name ? team.color : undefined,
+                      borderColor: team.color,
+                      color: selectedTeam === team.name ? "white" : undefined,
                     }}
                   >
                     {team.name}
@@ -165,36 +169,36 @@ export default function Home() {
                 {filteredDrivers.map((driver, index) => (
                   <Card
                     key={driver.id}
-                    className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer"
+                    className="bg-card/80 backdrop-blur border-border hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer group"
                   >
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-6">
-                        <div className="text-4xl font-bold text-primary w-12 text-center">
+                      <div className="flex items-center gap-4 md:gap-6">
+                        <div className="text-3xl md:text-4xl font-bold text-primary w-12 text-center flex-shrink-0">
                           {index + 1}
                         </div>
                         
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-2xl font-bold">{driver.name}</h3>
-                            <Badge variant="outline">{driver.nationality}</Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <h3 className="text-xl md:text-2xl font-bold">{driver.name}</h3>
+                            <Badge variant="outline" className="text-xs">{driver.nationality}</Badge>
                           </div>
-                          <p className="text-muted-foreground">{driver.team}</p>
+                          <p className="text-sm md:text-base text-muted-foreground">{driver.team}</p>
                         </div>
 
-                        <div className="hidden md:flex gap-8 text-center">
+                        <div className="hidden md:flex gap-6 md:gap-8 text-center flex-shrink-0">
                           <div>
                             <div className="text-2xl font-bold">{driver.wins}</div>
-                            <div className="text-sm text-muted-foreground">勝場</div>
+                            <div className="text-xs md:text-sm text-muted-foreground">勝場</div>
                           </div>
                           <div>
                             <div className="text-2xl font-bold">{driver.podiums}</div>
-                            <div className="text-sm text-muted-foreground">頒獎台</div>
+                            <div className="text-xs md:text-sm text-muted-foreground">頒獎台</div>
                           </div>
                         </div>
 
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-primary">{driver.points}</div>
-                          <div className="text-sm text-muted-foreground">積分</div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-2xl md:text-3xl font-bold text-primary">{driver.points}</div>
+                          <div className="text-xs md:text-sm text-muted-foreground">積分</div>
                         </div>
                       </div>
                     </CardContent>
@@ -204,7 +208,7 @@ export default function Home() {
             </TabsContent>
 
             {/* Teams Tab */}
-            <TabsContent value="teams" className="space-y-6">
+            <TabsContent value="teams" className="space-y-8">
               <div className="text-center mb-8">
                 <h2 className="text-4xl font-bold mb-2">2025 車隊陣容</h2>
                 <p className="text-muted-foreground">探索各支車隊的詳細資訊與車手陣容</p>
@@ -245,13 +249,13 @@ export default function Home() {
                       </div>
 
                       <div className="pt-4 border-t border-border">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="text-sm text-muted-foreground">車隊積分</span>
                           <span className="text-2xl font-bold text-primary">{team.points}</span>
                         </div>
                         <div className="space-y-1">
                           {team.drivers.map((driver, idx) => (
-                            <Badge key={idx} variant="secondary" className="mr-1">
+                            <Badge key={idx} variant="secondary" className="mr-1 mb-1">
                               {driver}
                             </Badge>
                           ))}
@@ -264,7 +268,7 @@ export default function Home() {
             </TabsContent>
 
             {/* Calendar Tab */}
-            <TabsContent value="calendar" className="space-y-6">
+            <TabsContent value="calendar" className="space-y-8">
               <div className="text-center mb-8">
                 <h2 className="text-4xl font-bold mb-2">2025 賽季賽程</h2>
                 <p className="text-muted-foreground">完整的賽事日曆與賽道資訊</p>
@@ -274,40 +278,42 @@ export default function Home() {
                 {races2025.map((race) => (
                   <Card
                     key={race.id}
-                    className={`bg-card/80 backdrop-blur border-border transition-all hover:scale-[1.02] cursor-pointer ${
+                    className={`bg-card/80 backdrop-blur border-border transition-all hover:scale-[1.02] cursor-pointer group ${
                       race.status === "completed"
                         ? "opacity-70 hover:opacity-100"
                         : "hover:border-primary/50"
                     }`}
                   >
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-6">
-                        <div className="text-3xl font-bold text-primary w-16 text-center">
+                      <div className="flex items-center gap-4 md:gap-6">
+                        <div className="text-3xl md:text-4xl font-bold text-primary w-16 text-center flex-shrink-0">
                           R{race.round}
                         </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-2xl font-bold">{race.name}</h3>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <h3 className="text-xl md:text-2xl font-bold">{race.name}</h3>
                             <Badge
                               variant={race.status === "completed" ? "secondary" : "default"}
+                              className="text-xs"
                             >
                               {race.status === "completed" ? "已完賽" : "即將舉行"}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                             <span>{race.circuit}</span>
                             <span>•</span>
                             <span>{race.country}</span>
                           </div>
                         </div>
 
-                        <div className="text-right">
-                          <div className="text-lg font-semibold mb-1">{race.date}</div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-sm md:text-base font-medium text-muted-foreground mb-1">
+                            {race.date}
+                          </div>
                           {race.winner && (
-                            <div className="flex items-center gap-1 text-sm text-primary">
-                              <Trophy className="w-4 h-4" />
-                              {race.winner}
+                            <div className="text-xs md:text-sm text-primary font-semibold">
+                              🏆 {race.winner}
                             </div>
                           )}
                         </div>
@@ -322,44 +328,79 @@ export default function Home() {
       </section>
 
       {/* Gallery Section */}
-      <section className="py-16 bg-card/50">
-        <div className="container">
+      <section className="py-16 bg-card/50 border-t border-border">
+        <div className="container px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">賽事精彩瞬間</h2>
-            <p className="text-muted-foreground text-lg">感受 F1 賽車的速度與激情</p>
+            <h2 className="text-4xl font-bold mb-2">精彩瞬間</h2>
+            <p className="text-muted-foreground">F1 賽事的精彩時刻</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer">
+              <img
+                src="/hero-f1-car.png"
+                alt="F1 Racing Car"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+              <div className="p-4 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-lg">現代賽車</h3>
+                <p className="text-sm text-muted-foreground">最新一代 F1 賽車的設計</p>
+              </div>
+            </div>
+
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer">
               <img
                 src="/team-garage.png"
                 alt="Team Garage"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
-                <h3 className="text-xl font-bold">車隊維修站</h3>
+              <div className="p-4 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-lg">車隊車庫</h3>
+                <p className="text-sm text-muted-foreground">高科技的維修和調試設施</p>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer">
               <img
                 src="/racing-circuit.png"
                 alt="Racing Circuit"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
-                <h3 className="text-xl font-bold">賽道風光</h3>
+              <div className="p-4 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-lg">賽道風景</h3>
+                <p className="text-sm text-muted-foreground">世界各地的著名賽道</p>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-lg group cursor-pointer h-64">
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer">
+              <img
+                src="/driver-helmet.png"
+                alt="Driver Helmet"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+              <div className="p-4 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-lg">車手頭盔</h3>
+                <p className="text-sm text-muted-foreground">獨特的車手個人設計</p>
+              </div>
+            </div>
+
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer">
               <img
                 src="/podium-celebration.png"
                 alt="Podium Celebration"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent flex items-end p-6">
-                <h3 className="text-xl font-bold">頒獎台慶祝</h3>
+              <div className="p-4 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-lg">頒獎台時刻</h3>
+                <p className="text-sm text-muted-foreground">勝利者的榮耀時刻</p>
+              </div>
+            </div>
+
+            <div className="group overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all hover:scale-105 cursor-pointer bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center min-h-64">
+              <div className="text-center">
+                <TrendingUp className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="font-bold text-lg">更多內容</h3>
+                <p className="text-sm text-muted-foreground">敬請期待</p>
               </div>
             </div>
           </div>
@@ -367,17 +408,41 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-border">
-        <div className="container text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Flag className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold">F1 資訊中心</span>
+      <footer className="border-t border-border py-12 bg-card/50">
+        <div className="container px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <Flag className="w-5 h-5 text-primary" />
+                F1 資訊中心
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                您的 Formula 1 資訊門戶，提供最新的賽事資訊、車隊數據和車手排名。
+              </p>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">快速連結</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">車手排行榜</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">車隊資訊</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">賽程表</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">關於</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">關於本站</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">聯絡我們</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">隱私政策</a></li>
+              </ul>
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            © 2025 F1 資訊中心 - 探索 Formula 1 的精彩世界
-          </p>
+          <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
+            <p>&copy; 2025 F1 資訊中心。所有權利保留。</p>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
+    
