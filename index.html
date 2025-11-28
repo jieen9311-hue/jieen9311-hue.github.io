@@ -3,167 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F1 資訊站（強化版）</title>
+  <title>F1 資訊站 — 全功能單檔</title>
+  <meta name="description" content="F1 資訊站：賽程、自動抓取官方資料、車手/車隊/賽道介紹、新聞 RSS、倒數、深色模式、互動表格。" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background:#0d0d0d; color:white; }
-    header { background:#e10600; padding:16px; display:flex; justify-content:space-between; align-items:center; }
-    nav a { color:white; margin:0 10px; text-decoration:none; font-weight:bold; }
-    .container { max-width:1100px; margin:auto; padding:20px; }
-    .card { background:#111; padding:16px; border-radius:10px; margin:12px 0; border:1px solid #333; }
-    .grid { display:grid; gap:16px; }
-    .grid-2 { grid-template-columns:1fr 1fr; }
-    .race { border:1px solid #333; padding:12px; border-radius:8px; }
-    .news-item { border-bottom:1px solid #333; padding:10px 0; }
-    button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
-    .dark-toggle { background:white; color:black; }
-    .highlight { color:#e10600; font-weight:bold; }
+    :root{
+      --bg:#0b0b0b; --card:#101010; --muted:#9ca3af; --accent:#e10600; --glass: rgba(255,255,255,0.03);
+    }
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;background:var(--bg);color:#fff}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff5a5a);display:flex;align-items:center;justify-content:center;font-weight:800}
+    nav a{margin:0 10px;color:var(--muted);text-decoration:none;font-weight:600}
+    .card{background:var(--card);border-radius:12px;padding:16px;margin:12px 0;border:1px solid rgba(255,255,255,0.04)}
+    .grid{display:grid;gap:16px}
+    .cols-3{grid-template-columns:1fr 360px 300px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    .muted{color:var(--muted)}
+    .small{font-size:13px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+    th{cursor:pointer}
+    img.circuit{width:100%;height:160px;object-fit:cover;border-radius:8px}
+    .flex{display:flex;gap:12px;align-items:center}
+    .pill{background:var(--glass);padding:6px 10px;border-radius:999px;font-weight:600}
+    footer{padding:18px 0;color:var(--muted);font-size:13px}
+    /* light theme */
+    body.light{--bg:#f7f7f8;--card:#ffffff;color:#0b1220;--muted:#4b5563}
+    body.light .logo{color:#fff}
+    /* responsive */
+    @media (max-width:900px){.cols-3{grid-template-columns:1fr} img.circuit{height:120px}}
   </style>
 </head>
 <body>
-  <header>
-    <div style="font-size:24px; font-weight:bold;">F1 資訊站</div>
-    <nav>
-      <a href="#home">首頁</a>
-      <a href="#schedule">賽程</a>
-      <a href="#drivers">車手</a>
-      <a href="#teams">車隊</a>
-      <a href="#news">新聞</a>
-    </nav>
-    <button id="toggleDark" class="dark-toggle">深色/亮色</button>
-  </header>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">F1</div>
+        <div>
+          <div style="font-weight:800;font-size:18px">F1 資訊站</div>
+          <div class="small muted">賽程、車手、車隊、賽道、新聞與即時倒數</div>
+        </div>
+      </div>
 
-  <div class="container" id="content"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <nav>
+          <a href="#/home">首頁</a>
+          <a href="#/schedule">賽程</a>
+          <a href="#/drivers">車手</a>
+          <a href="#/teams">車隊</a>
+          <a href="#/circuits">賽道</a>
+          <a href="#/news">新聞</a>
+        </nav>
+        <select id="seasonSelect" class="pill small">
+          <option value="current">今年賽季</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+        </select>
+        <button id="themeBtn" class="pill small">切換淺色</button>
+      </div>
+    </header>
+
+    <main id="app"></main>
+
+    <footer class="muted">
+      © <span id="year"></span> F1 資訊站 • 資料來源：Ergast Developer API、Formula1 官方 RSS（透過 proxy）
+    </footer>
+  </div>
 
   <script>
-    const content = document.getElementById('content');
-
-    const routes = {
-      home: () => `
-        <h1>🏎️ F1 資訊站 - 官方風格強化版</h1>
-        <div class="card">此網站包含：即時新聞、2025 賽程、車手 & 車隊資訊、倒數計時、深色模式</div>
-      `,
-
-      schedule: () => `
-        <h1>📅 賽程</h1>
-        <div id="raceList" class="grid"></div>
-        <script>loadSchedule()<\/script>
-      `,
-
-      drivers: () => `
-        <h1>👨‍🏎️ 車手名單（依積分排序）</h1>
-        <div id="driverList"></div>
-        <script>loadDrivers()<\/script>
-      `,
-
-      teams: () => `
-        <h1>🏁 車隊積分</h1>
-        <div id="teamList"></div>
-        <script>loadTeams()<\/script>
-      `,
-
-      news: () => `
-        <h1>📰 F1 新聞（RSS 即時更新）</h1>
-        <div id="newsList"></div>
-        <script>loadNews()<\/script>
-      `
+    // ---------------------- State ----------------------
+    const state = {
+      season: 'current',
+      races: [],
+      drivers: [],
+      teams: [],
+      circuits: [],
+      news: [],
+      champions: [],
     };
 
-    function render() {
-      const hash = location.hash.replace('#','') || 'home';
-      content.innerHTML = routes[hash] ? routes[hash]() : '<h1>404</h1>';
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ---------------------- Router ----------------------
+    const routes = {
+      '/home': renderHome,
+      '/schedule': renderSchedule,
+      '/drivers': renderDrivers,
+      '/driver': renderDriverDetail,
+      '/teams': renderTeams,
+      '/team': renderTeamDetail,
+      '/circuits': renderCircuits,
+      '/news': renderNews,
+    };
+
+    function navigate() {
+      const hash = location.hash.replace('#','') || '/home';
+      const [path, id] = hash.split('/').filter(Boolean);
+      const routeKey = '/' + (path || 'home');
+      const render = routes[routeKey] || renderHome;
+      render(id);
     }
 
-    window.addEventListener('hashchange', render);
-    render();
+    window.addEventListener('hashchange', navigate);
 
-    /* ------------------ 深色模式 ------------------ */
-    document.getElementById('toggleDark').onclick = () => {
-      if(document.body.style.background === 'white') {
-        document.body.style.background = '#0d0d0d';
-        document.body.style.color = 'white';
-      } else {
-        document.body.style.background = 'white';
-        document.body.style.color = 'black';
-      }
+    // ---------------------- Utilities ----------------------
+    function el(html){ const div=document.createElement('div'); div.innerHTML=html; return div.firstElementChild; }
+    function q(sel){ return document.querySelector(sel); }
+
+    function formatDateTime(dateIso, time) {
+      try{
+        // Ergast gives date and time separately; combine if needed
+        const iso = time ? dateIso + 'T' + time : dateIso;
+        const d = new Date(iso);
+        if(isNaN(d)) return dateIso + ' ' + (time||'');
+        return d.toLocaleString();
+      }catch{ return dateIso + ' ' + (time||''); }
     }
 
-    /* ------------------ 抓賽程 API ------------------ */
-    async function loadSchedule() {
-      const raceList = document.getElementById('raceList');
-      const r = await fetch('https://ergast.com/api/f1/current.json');
-      const j = await r.json();
+    function placeholderImage(text){ return `https://placehold.co/800x400?text=${encodeURIComponent(text)}` }
 
-      (j.MRData.RaceTable.Races || []).forEach(r => {
-        raceList.innerHTML += `
-          <div class="card race">
-            <div class="highlight">${r.raceName}</div>
-            <div>${r.Circuit.circuitName}</div>
-            <div>${r.date} ${r.time || ''}</div>
-            <div>${r.Circuit.Location.locality}, ${r.Circuit.Location.country}</div>
-          </div>
-        `;
-      });
-    }
+    // ---------------------- Fetch / Data ----------------------
+    async function fetchSeasonData(){
+      const s = state.season === 'current' ? new Date().getFullYear() : state.season;
+      try{
+        // races
+        const racesResp = await fetch(`https://ergast.com/api/f1/${s}.json`);
+        const racesJson = await racesResp.json();
+        state.races = racesJson.MRData?.RaceTable?.Races || [];
 
-    /* ------------------ 車手 & 車隊 ------------------ */
-    async function loadDrivers() {
-      const div = document.getElementById('driverList');
-      const r = await fetch('https://ergast.com/api/f1/current/driverStandings.json');
-      const j = await r.json();
+        // driver standings (for drivers & teams)
+        const standResp = await fetch(`https://ergast.com/api/f1/${s}/driverStandings.json`);
+        const standJson = await standResp.json();
+        const driverStandings = standJson.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
 
-      j.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(d => {
-        div.innerHTML += `
-          <div class="card">
-            <div class="highlight">${d.position}. ${d.Driver.givenName} ${d.Driver.familyName}</div>
-            <div>${d.Constructors[0].name}</div>
-            <div>積分：${d.points}</div>
-          </div>
-        `;
-      });
-    }
+        state.drivers = driverStandings.map(d => ({
+          id: d.Driver.driverId,
+          name: d.Driver.givenName + ' ' + d.Driver.familyName,
+          nationality: d.Driver.nationality,
+          points: Number(d.points),
+          position: Number(d.position),
+          constructor: d.Constructors?.[0]?.name || '',
+        }));
 
-    async function loadTeams() {
-      const div = document.getElementById('teamList');
-      const r = await fetch('https://ergast.com/api/f1/current/constructorStandings.json');
-      const j = await r.json();
+        // constructor standings
+        const consResp = await fetch(`https://ergast.com/ap
 
-      j.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.forEach(t => {
-        div.innerHTML += `
-          <div class="card">
-            <div class="highlight">${t.position}. ${t.Constructor.name}</div>
-            <div>積分：${t.points}</div>
-          </div>
-        `;
-      });
-    }
-
-    /* ------------------ F1 新聞（RSS 轉 JSON Proxy） ------------------ */
-    async function loadNews() {
-      const div = document.getElementById('newsList');
-
-      // 使用官方 RSS (需 proxy 才能在瀏覽器解析)
-      const url = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.formula1.com/content/fom-website/en/latest/all.xml')}`;
-
-      const r = await fetch(url);
-      const j = await r.json();
-
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(j.contents, 'application/xml');
-      const items = xml.querySelectorAll('item');
-
-      items.forEach(i => {
-        div.innerHTML += `
-          <div class="news-item">
-            <div class="highlight">${i.querySelector('title').textContent}</div>
-            <div>${i.querySelector('pubDate').textContent}</div>
-            <div>${i.querySelector('description').textContent.slice(0,120)}...</div>
-          </div>
-        `;
-      });
-    }
-  </script>
-</body>
-</html>
-
+   
    
   
