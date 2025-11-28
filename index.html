@@ -1,202 +1,238 @@
-```jsx
-import { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  useParams,
-} from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F1 資訊站 — 單檔 HTML 範例</title>
+  <!-- Tailwind Play CDN for quick demo -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* small utilities */
+    .glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
+  </style>
+</head>
+<body class="antialiased bg-gray-50 text-gray-900">
+  <div id="app" class="min-h-screen max-w-6xl mx-auto p-6">
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">F1</div>
+        <div>
+          <h1 class="text-2xl font-extrabold">F1 資訊站</h1>
+          <p class="text-sm text-gray-500">賽程、車手、積分與即時新聞</p>
+        </div>
+      </div>
 
-// ===== Dark Theme Toggle =====
-function ThemeToggle({ dark, setDark }) {
-  return (
-    <Button
-      onClick={() => setDark(!dark)}
-      className="fixed top-4 right-4 z-50"
-    >
-      {dark ? "☀️ Light" : "🌙 Dark"}
-    </Button>
-  );
-}
+      <div class="flex items-center gap-3">
+        <select id="season" class="px-3 py-1 rounded bg-white/80">
+          <option value="current">今年賽季</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+        </select>
+        <button id="themeToggle" class="px-3 py-1 rounded glass">深色</button>
+      </div>
+    </header>
 
-// ===== Countdown Component =====
-function Countdown({ target }) {
-  const [timeLeft, setTimeLeft] = useState({});
+    <!-- Nav -->
+    <nav class="flex gap-6 mb-6 text-lg">
+      <a href="#/" class="nav-link">🏠 首頁</a>
+      <a href="#/races" class="nav-link">📅 賽程</a>
+      <a href="#/drivers" class="nav-link">👨‍🚀 車手</a>
+    </nav>
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const diff = new Date(target) - new Date();
-      if (diff <= 0) return setTimeLeft({ done: true });
+    <!-- App container -->
+    <main id="view"></main>
 
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
+    <footer class="mt-10 text-sm text-gray-500 border-t pt-4">© <span id="year"></span> F1 資訊站 • 資料來源：Ergast API（範例）</footer>
+  </div>
+
+  <script>
+    // -----------------------------
+    // Simple hash router
+    // -----------------------------
+    const routes = {
+      '/': renderHome,
+      '/races': renderRaces,
+      '/drivers': renderDrivers,
+    };
+
+    function router() {
+      const path = location.hash.replace('#','') || '/';
+      const view = routes[path] || routes['/'];
+      view();
+      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('font-bold'));
+      document.querySelectorAll('.nav-link').forEach(a => {
+        if (a.getAttribute('href') === '#' + path) a.classList.add('font-bold');
       });
-    }, 1000);
+    }
 
-    return () => clearInterval(interval);
-  }, [target]);
+    window.addEventListener('hashchange', router);
+    window.addEventListener('load', () => { document.getElementById('year').textContent = new Date().getFullYear(); router(); fetchSeasonData(); });
 
-  if (timeLeft.done) return <p className="text-xl">🏁 比賽開始！</p>;
+    // -----------------------------
+    // State & Data Fetching
+    // -----------------------------
+    let state = {
+      season: 'current',
+      races: [],
+      standings: [],
+      drivers: [],
+    };
 
-  return (
-    <div className="text-xl font-semibold">
-      {timeLeft.days} 天 {timeLeft.hours} 時 {timeLeft.minutes} 分 {timeLeft.seconds} 秒
-    </div>
-  );
-}
+    document.getElementById('season').addEventListener('change', (e) => { state.season = e.target.value; fetchSeasonData(); });
 
-// ===== Dummy Data =====
-const races = [
-  {
-    id: 1,
-    name: "巴林站 Bahrain GP",
-    date: "2025-03-14T18:00:00+03:00",
-  },
-  {
-    id: 2,
-    name: "沙烏地阿拉伯站 Saudi GP",
-    date: "2025-03-21T20:00:00+03:00",
-  },
-];
+    async function fetchSeasonData() {
+      const s = state.season === 'current' ? new Date().getFullYear() : state.season;
+      try {
+        // races
+        const r = await fetch(`https://ergast.com/api/f1/${s}.json`).then(res => res.json());
+        state.races = r.MRData?.RaceTable?.Races || [];
 
-const drivers = [
-  { id: 1, name: "Max Verstappen", team: "Red Bull Racing", bio: "三屆世界冠軍" },
-  { id: 2, name: "Lewis Hamilton", team: "Ferrari (2025)", bio: "七屆世界冠軍" },
-];
+        // driver standings
+        const st = await fetch(`https://ergast.com/api/f1/${s}/driverStandings.json`).then(res => res.json());
+        state.standings = st.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
 
-// ===== Home Page =====
-function Home() {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h1 className="text-4xl font-bold mb-6">F1 線上資訊站</h1>
-      <h2 className="text-2xl font-semibold mb-4">下一場比賽倒數</h2>
+        // drivers list (from standings)
+        state.drivers = state.standings.map(d => ({ id: d.Driver.driverId, name: d.Driver.givenName + ' ' + d.Driver.familyName, team: d.Constructors?.[0]?.name || '' }));
 
-      <Card className="p-6 mb-10">
-        <CardContent>
-          <p className="text-xl mb-2">{races[0].name}</p>
-          <Countdown target={races[0].date} />
-        </CardContent>
-      </Card>
+        // re-render current view if needed
+        router();
+      } catch (err) {
+        console.error('fetch error', err);
+      }
+    }
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-2">比賽列表</h3>
-            <Link to="/races" className="text-blue-400 underline">
-              查看所有比賽 →
-            </Link>
-          </CardContent>
-        </Card>
+    // -----------------------------
+    // Utilities
+    // -----------------------------
+    function el(html) { const div = document.createElement('div'); div.innerHTML = html; return div.firstElementChild; }
 
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-2">車手介紹</h3>
-            <Link to="/drivers" className="text-blue-400 underline">
-              查看所有車手 →
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    </motion.div>
-  );
-}
+    function formatDateISO(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString();
+      } catch { return iso; }
+    }
 
-// ===== Drivers Page =====
-function Drivers() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">車手列表</h1>
-      <div className="grid md:grid-cols-2 gap-4">
-        {drivers.map((d) => (
-          <Card key={d.id}>
-            <CardContent className="p-4">
-              <h2 className="text-xl font-semibold">{d.name}</h2>
-              <p className="opacity-70">{d.team}</p>
-              <Link
-                to={`/driver/${d.id}`}
-                className="text-blue-400 underline"
-              >
-                查看詳情
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+    // Countdown component (returns element)
+    function Countdown(targetISO) {
+      const container = document.createElement('div');
+      container.className = 'text-xl font-semibold';
 
-// ===== Driver Detail Page =====
-function DriverDetail() {
-  const { id } = useParams();
-  const driver = drivers.find((d) => d.id === Number(id));
-  if (!driver) return <p>找不到車手</p>;
+      function tick() {
+        const diff = new Date(targetISO) - new Date();
+        if (isNaN(diff)) { container.textContent = '時間格式錯誤'; return; }
+        if (diff <= 0) { container.textContent = '🏁 比賽開始！'; clearInterval(timer); return; }
+        const days = Math.floor(diff / (1000*60*60*24));
+        const hours = Math.floor((diff/(1000*60*60))%24);
+        const minutes = Math.floor((diff/(1000*60))%60);
+        const seconds = Math.floor((diff/1000)%60);
+        container.textContent = `${days} 天 ${hours} 時 ${minutes} 分 ${seconds} 秒`;
+      }
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-4">{driver.name}</h1>
-      <p className="text-lg mb-2">車隊：{driver.team}</p>
-      <p className="opacity-70">{driver.bio}</p>
-    </div>
-  );
-}
+      tick();
+      const timer = setInterval(tick, 1000);
+      return container;
+    }
 
-// ===== Races Page =====
-function Races() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">F1 2025 賽季賽程</h1>
-      <div className="grid gap-4">
-        {races.map((r) => (
-          <Card key={r.id}>
-            <CardContent className="p-4">
-              <h2 className="text-xl font-semibold">{r.name}</h2>
-              <p className="opacity-70">{new Date(r.date).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+    // -----------------------------
+    // Views
+    // -----------------------------
+    function renderHome() {
+      const nextRace = state.races[0];
+      const html = document.createElement('div');
+      html.innerHTML = `
+        <h2 class="text-3xl font-bold mb-4">下一場比賽倒數</h2>
+        <div class="bg-white rounded-2xl p-6 shadow mb-6">
+          <div id="nextRaceName" class="text-xl mb-2"></div>
+          <div id="nextRaceCountdown"></div>
+        </div>
 
-// ===== Main App =====
-export default function App() {
-  const [dark, setDark] = useState(false);
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl p-6 shadow">
+            <h3 class="text-2xl font-semibold mb-2">賽程快速連結</h3>
+            <a href="#/races" class="text-blue-500 underline">查看全部賽程 →</a>
+          </div>
 
-  return (
-    <div className={dark ? "dark" : ""}>
-      <div className="min-h-screen p-8 bg-white dark:bg-black dark:text-white transition">
-        <Router>
-          <ThemeToggle dark={dark} setDark={setDark} />
+          <div class="bg-white rounded-2xl p-6 shadow">
+            <h3 class="text-2xl font-semibold mb-2">車手快速連結</h3>
+            <a href="#/drivers" class="text-blue-500 underline">查看車手 →</a>
+          </div>
+        </div>
+      `;
 
-          <nav className="flex gap-6 mb-8 text-xl">
-            <Link to="/">🏎️ 首頁</Link>
-            <Link to="/races">📅 賽程</Link>
-            <Link to="/drivers">👨‍🚀 車手</Link>
-          </nav>
+      const view = document.getElementById('view'); view.innerHTML=''; view.appendChild(html);
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/races" element={<Races />} />
-            <Route path="/drivers" element={<Drivers />} />
-            <Route path="/driver/:id" element={<DriverDetail />} />
-          </Routes>
-        </Router>
-      </div>
-    </div>
-  );
-}
-```
+      if (nextRace) {
+        document.getElementById('nextRaceName').textContent = `${nextRace.raceName} · ${nextRace.Circuit?.circuitName || ''}`;
+        const iso = nextRace.date + (nextRace.time ? nextRace.time : '');
+        const countdownEl = Countdown(iso);
+        document.getElementById('nextRaceCountdown').appendChild(countdownEl);
+      } else {
+        document.getElementById('nextRaceName').textContent = '尚無賽程資料';
+      }
+    }
 
+    function renderRaces() {
+      const view = document.getElementById('view'); view.innerHTML = '';
+      const container = document.createElement('div');
+      container.innerHTML = `<h2 class="text-3xl font-bold mb-4">賽程（${state.season === 'current' ? new Date().getFullYear() : state.season}）</h2>`;
 
+      if (state.races.length === 0) {
+        container.innerHTML += '<div class="p-4 bg-white rounded">尚無賽程資料</div>';
+      } else {
+        const grid = document.createElement('div'); grid.className = 'grid gap-4';
+        state.races.forEach(r => {
+          const card = document.createElement('div'); card.className = 'bg-white p-4 rounded shadow';
+          card.innerHTML = `
+            <div class="font-medium">${r.raceName}</div>
+            <div class="text-sm text-gray-500">${r.Circuit?.circuitName || ''} · ${r.Circuit?.Location?.locality || ''}, ${r.Circuit?.Location?.country || ''}</div>
+            <div class="text-xs mt-2">${formatDateISO(r.date + (r.time||''))}</div>
+          `;
+          grid.appendChild(card);
+        });
+        container.appendChild(grid);
+      }
 
-             
-  
+      view.appendChild(container);
+    }
+
+    function renderDrivers() {
+      const view = document.getElementById('view'); view.innerHTML = '';
+      const container = document.createElement('div');
+      container.innerHTML = `<h2 class="text-3xl font-bold mb-4">車手列表</h2>`;
+
+      if (state.drivers.length === 0) {
+        container.innerHTML += '<div class="p-4 bg-white rounded">尚無車手資料</div>';
+      } else {
+        const grid = document.createElement('div'); grid.className = 'grid md:grid-cols-2 gap-4';
+        state.drivers.forEach(d => {
+          const card = document.createElement('div'); card.className = 'bg-white p-4 rounded shadow';
+          card.innerHTML = `
+            <div class="font-medium">${d.name}</div>
+            <div class="text-sm text-gray-500">${d.team}</div>
+          `;
+          grid.appendChild(card);
+        });
+        container.appendChild(grid);
+      }
+
+      view.appendChild(container);
+    }
+
+    // -----------------------------
+    // Theme toggle
+    // -----------------------------
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        document.body.classList.add('bg-black','text-white');
+        themeBtn.textContent = '淺色';
+      } else {
+        document.body.classList.remove('bg-black','text-white');
+        themeBtn.textContent = '深色';
+      }
+    });
+  </script>
+</body>
+</html>
