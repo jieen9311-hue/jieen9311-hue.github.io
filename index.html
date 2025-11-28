@@ -1,234 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 速度極限 - 專屬網站</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F1 React App</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0a; }
+  </style>
 </head>
-<body>
+<body class="text-white">
+  <div id="root"></div>
 
-    <header class="navbar">
-        <div class="logo">F1 PIT STOP</div>
-        <nav>
-            <a href="#home">主頁</a>
-            <a href="#drivers">車手</a>
-            <a href="#teams">車隊</a>
-            <a href="您的 GitHub 連結" target="_blank">Repo</a>
-        </nav>
-    </header>
+  <script type="text/babel">
+    const teams = {
+      Ferrari: {
+        desc: "Ferrari 是歷史最悠久、最具代表性的 F1 車隊。",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Scuderia_Ferrari_Logo.svg/1200px-Scuderia_Ferrari_Logo.svg.png"
+      },
+      Mercedes: {
+        desc: "Mercedes 在混合動力年代稱霸多年。",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Mercedes_AMG_Petronas_F1_Logo.svg/2560px-Mercedes_AMG_Petronas_F1_Logo.svg.png"
+      },
+      "Red Bull": {
+        desc: "Red Bull 以空力設計與強勢表現著名。",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0d/Red_Bull_Racing_logo.svg/2560px-Red_Bull_Racing_logo.svg.png"
+      },
+      McLaren: {
+        desc: "McLaren 傳統強隊，近年強勢回歸。",
+        img: "https://upload.wikimedia.org/wikipedia/en/thumb/8/83/McLaren_Racing_logo.svg/2560px-McLaren_Racing_logo.svg.png"
+      }
+    };
 
-    <main>
-        <section id="home" class="hero-section">
-            <div class="hero-content">
-                <h1>F1 2025：速度與榮耀</h1>
-                <p>探索極限賽車的世界，追蹤您最愛的車手和車隊的最新動態。</p>
-                <a href="#drivers" class="cta-button">查看車手排名</a>
+    function TeamSection() {
+      const [selected, setSelected] = React.useState(null);
+      return (
+        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
+          <h2 className="text-2xl font-bold mb-4">🏁 F1 車隊互動展示</h2>
+          <div className="flex flex-wrap gap-3 mb-4">
+            {Object.keys(teams).map(team => (
+              <button key={team} onClick={() => setSelected(team)} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-xl">{team}</button>
+            ))}
+          </div>
+          {selected && (
+            <div className="mt-4">
+              <img src={teams[selected].img} className="w-40 mb-4" />
+              <p className="text-lg">{teams[selected].desc}</p>
             </div>
-        </section>
+          )}
+        </div>
+      );
+    }
 
-        <section id="drivers" class="info-cards">
-            <h2>🏆 本賽季焦點車手</h2>
-            
-            <div class="card red-bull">
-                <h3>Max Verstappen</h3>
-                <p>車隊：Oracle Red Bull Racing</p>
-                <p>國籍：荷蘭</p>
-                <p class="stat">三屆世界冠軍</p>
-            </div>
+    function DriverCard({ name, team, img }) {
+      return (
+        <div className="bg-neutral-800 p-4 rounded-xl shadow hover:scale-105 transition">
+          <img src={img} className="rounded-xl mb-3" />
+          <h3 className="text-xl font-bold">{name}</h3>
+          <p className="text-red-400">{team}</p>
+        </div>
+      );
+    }
 
-            <div class="card ferrari">
-                <h3>Charles Leclerc</h3>
-                <p>車隊：Scuderia Ferrari</p>
-                <p>國籍：摩納哥</p>
-                <p class="stat">法拉利的希望之星</p>
-            </div>
+    function DriversSection() {
+      const drivers = [
+        { name: "Max Verstappen", team: "Red Bull", img: "https://www.formula1.com/content/dam/fom-website/drivers/M/max-verstappen/verstappen.png" },
+        { name: "Charles Leclerc", team: "Ferrari", img: "https://www.formula1.com/content/dam/fom-website/drivers/L/charles-leclerc/leclerc.png" },
+        { name: "Lewis Hamilton", team: "Mercedes", img: "https://www.formula1.com/content/dam/fom-website/drivers/H/lewis-hamilton/hamilton.png" }
+      ];
+      return (
+        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
+          <h2 className="text-2xl font-bold mb-4">🏎️ 車手介紹</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {drivers.map(d => <DriverCard key={d.name} {...d} />)}
+          </div>
+        </div>
+      );
+    }
 
-            <div class="card mercedes">
-                <h3>Lewis Hamilton</h3>
-                <p>車隊：Mercedes-AMG PETRONAS F1</p>
-                <p>國籍：英國</p>
-                <p class="stat">F1 傳奇人物</p>
-            </div>
-        </section>
+    function RaceCalendar() {
+      const races = [
+        "巴林站", "沙烏地阿拉伯站", "澳洲站", "日本站", "中國站", "邁阿密站"
+      ];
+      return (
+        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6">
+          <h2 className="text-2xl font-bold mb-4">📅 2025 賽曆（示例）</h2>
+          <ul className="list-disc pl-6 text-lg">
+            {races.map(r => <li key={r}>{r}</li>)}
+          </ul>
+        </div>
+      );
+    }
 
-        <section id="teams" class="teams-section">
-            <h2>🏁 賽事精華</h2>
-            <p>
-                Formula 1 不僅是速度的競爭，更是技術、策略和團隊合作的極致體現。
-                每場大獎賽都是一場高風險、高回報的戲劇。
-            </p>
-        </section>
-    </main>
+    function Timer() {
+      const [sec, setSec] = React.useState(0);
+      React.useEffect(() => {
+        const t = setInterval(() => setSec(s => s + 1), 1000);
+        return () => clearInterval(t);
+      }, []);
+      return (
+        <div className="bg-neutral-900 p-6 rounded-2xl shadow-xl mb-6 text-center">
+          <h2 className="text-2xl font-bold mb-2">⏱️ 計時器</h2>
+          <p className="text-4xl">{sec}s</p>
+        </div>
+      );
+    }
 
-    <footer>
-        <p>Formula 1 Fan Site &copy; 2025. | 由 GitHub Pages 託管</p>
-    </footer>
+    function App() {
+      return (
+        <div className="max-w-5xl mx-auto p-6">
+          <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-red-600 to-red-900 py-4 rounded-xl">F1 React 互動展示</h1>
+          <Timer />
+          <TeamSection />
+          <DriversSection />
+          <RaceCalendar />
+        </div>
+      );
+    }
 
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
-/* 導入字體：Teko 增加競速感 */
-@import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&display=swap');
-
-/* 全域基礎設定 */
-body {
-    font-family: 'Teko', sans-serif; /* 使用競速風格字體 */
-    margin: 0;
-    padding: 0;
-    background-color: #0d0d0d; /* 深黑背景，模擬瀝青賽道 */
-    color: #f4f4f4; /* 淺色文字 */
-    line-height: 1.6;
-}
-
-/* 頂部導航列 */
-.navbar {
-    background-color: #1a1a1a; /* 比背景稍淺的黑色 */
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 3px solid #E10600; /* F1 標誌性的紅色邊框 */
-}
-
-.logo {
-    font-size: 2.5em;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 2px;
-}
-
-.navbar a {
-    color: #f4f4f4;
-    text-decoration: none;
-    margin-left: 25px;
-    font-size: 1.4em;
-    transition: color 0.3s;
-}
-
-.navbar a:hover {
-    color: #E10600; /* 懸停變為 F1 紅色 */
-}
-
-/* 英雄區塊 (Hero Section) */
-.hero-section {
-    background: url('https://picsum.photos/1200/600') no-repeat center center/cover; /* 請替換成您的 F1 背景圖 */
-    height: 60vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-}
-
-/* 增加一個深色覆蓋層，讓文字更清晰 */
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-}
-
-.hero-content {
-    z-index: 2;
-}
-
-.hero-content h1 {
-    font-size: 4em;
-    color: #ffffff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.hero-content p {
-    font-size: 1.5em;
-    margin-bottom: 20px;
-}
-
-.cta-button {
-    background-color: #E10600; /* F1 紅色 CTA */
-    color: white;
-    padding: 12px 30px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.5em;
-    font-weight: 500;
-    display: inline-block;
-    transition: background-color 0.3s;
-}
-
-.cta-button:hover {
-    background-color: #ff3333;
-}
-
-/* 資訊卡片區塊 */
-.info-cards {
-    padding: 50px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.info-cards h2 {
-    font-size: 3em;
-    color: #E10600;
-    margin-bottom: 40px;
-    border-bottom: 2px solid #333;
-    padding-bottom: 10px;
-}
-
-.card {
-    display: inline-block;
-    width: 30%;
-    min-width: 280px;
-    margin: 15px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s, box-shadow 0.3s;
-    text-align: left;
-    border-left: 5px solid; /* 用於突出車隊顏色 */
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(225, 6, 0, 0.3); /* 懸停時的紅色光芒 */
-}
-
-.card h3 {
-    font-size: 2.2em;
-    margin-top: 0;
-}
-
-.card p {
-    font-family: sans-serif; /* 內文使用清晰字體 */
-    font-size: 1em;
-    margin: 5px 0;
-}
-
-.stat {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #ffcc00; /* 獎杯金色 */
-    margin-top: 10px;
-}
-
-/* 車隊特定顏色 (模擬官方塗裝) */
-.red-bull { border-left-color: #0600EF; background-color: #181938; } /* 深藍 */
-.ferrari { border-left-color: #E10600; background-color: #2b0303; } /* 經典紅 */
-.mercedes { border-left-color: #00D2BE; background-color: #122a27; } /* 銀箭青色 */
-
-/* 底部 */
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #1a1a1a;
-    border-top: 3px solid #E10600;
-    font-family: sans-serif;
-    font-size: 0.9em;
-}
