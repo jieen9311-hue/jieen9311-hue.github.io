@@ -1,214 +1,202 @@
-// F1-GitHub-Pages-Site.jsx
-// 🔥 Enhanced UI Version — Improved styling, spacing, gradients, shadows, and layout aesthetics
-// Single-file React component (Tailwind-ready) suitable for preview and direct use in a GitHub Pages React app.
-// Features:
-// - Responsive layout
-// - Mock race calendar, drivers, teams, standings
-// - Search, filter and sort interactive elements
-// - Theme (light/dark) toggle
-// - Small Framer Motion animations
-// - Instructions below explain how to deploy to GitHub Pages
-
-import React, { useState, useMemo } from "react";
+```jsx
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams,
+} from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-// --- Mock data (replace with API data if you want) ---
-const DRIVERS = [
-  { id: 1, name: "Max Verstappen", team: "Red Bull", points: 454, country: "NL" },
-  { id: 2, name: "Lewis Hamilton", team: "Mercedes", points: 387, country: "GB" },
-  { id: 3, name: "Lando Norris", team: "McLaren", points: 260, country: "GB" },
-  { id: 4, name: "Charles Leclerc", team: "Ferrari", points: 230, country: "MC" },
-  { id: 5, name: "Oscar Piastri", team: "McLaren", points: 170, country: "AU" },
-];
+// ===== Dark Theme Toggle =====
+function ThemeToggle({ dark, setDark }) {
+  return (
+    <Button
+      onClick={() => setDark(!dark)}
+      className="fixed top-4 right-4 z-50"
+    >
+      {dark ? "☀️ Light" : "🌙 Dark"}
+    </Button>
+  );
+}
 
-const RACES = [
-  { id: 1, name: "Bahrain GP", date: "2025-03-08", country: "Bahrain" },
-  { id: 2, name: "Monaco GP", date: "2025-05-25", country: "Monaco" },
-  { id: 3, name: "British GP", date: "2025-07-06", country: "UK" },
-  { id: 4, name: "Belgian GP", date: "2025-08-24", country: "Belgium" },
-  { id: 5, name: "Abu Dhabi GP", date: "2025-11-30", country: "UAE" },
-];
+// ===== Countdown Component =====
+function Countdown({ target }) {
+  const [timeLeft, setTimeLeft] = useState({});
 
-const TEAMS = [
-  { id: 1, name: "Red Bull" },
-  { id: 2, name: "Mercedes" },
-  { id: 3, name: "McLaren" },
-  { id: 4, name: "Ferrari" },
-];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = new Date(target) - new Date();
+      if (diff <= 0) return setTimeLeft({ done: true });
 
-// --- Utility helpers ---
-const formatDate = (iso) => new Date(iso).toLocaleDateString();
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    }, 1000);
 
-export default function F1Site() {
-  const [query, setQuery] = useState("");
-  const [teamFilter, setTeamFilter] = useState("All");
-  const [sortBy, setSortBy] = useState("points");
-  const [dark, setDark] = useState(false);
+    return () => clearInterval(interval);
+  }, [target]);
 
-  const filteredDrivers = useMemo(() => {
-    let list = DRIVERS.slice();
-    if (teamFilter !== "All") list = list.filter((d) => d.team === teamFilter);
-    if (query) list = list.filter((d) => d.name.toLowerCase().includes(query.toLowerCase()));
-    if (sortBy === "points") list.sort((a, b) => b.points - a.points);
-    if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    return list;
-  }, [query, teamFilter, sortBy]);
-
-  const upcomingRaces = useMemo(() => {
-    const now = new Date();
-    return RACES.filter((r) => new Date(r.date) >= now).slice(0, 5);
-  }, []);
+  if (timeLeft.done) return <p className="text-xl">🏁 比賽開始！</p>;
 
   return (
-    <div className={dark ? "min-h-screen bg-gray-900 text-gray-100" : "min-h-screen bg-gray-50 text-gray-900"}>
-      <div className="max-w-6xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-10 bg-gradient-to-r from-red-600 to-black text-white p-6 rounded-2xl shadow-xl">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">F1 Info Hub</h1>
-            <p className="text-sm opacity-80">輕量級 F1 門戶 —  賽程、車手、車隊與積分一覽</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setDark(!dark)}
-              className="px-3 py-1 rounded-lg border hover:opacity-90"
-            >
-              {dark ? "🌞 Light" : "🌙 Dark"}
-            </button>
-            <a
-              href="https://github.com/your-username/your-repo"
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1 rounded-lg border hover:opacity-90"
-            >
-              View on GitHub
-            </a>
-          </div>
-        </header>
+    <div className="text-xl font-semibold">
+      {timeLeft.days} 天 {timeLeft.hours} 時 {timeLeft.minutes} 分 {timeLeft.seconds} 秒
+    </div>
+  );
+}
 
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <section className="lg:col-span-2 space-y-6">
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl shadow-lg border bg-white/60 backdrop-blur dark:bg-gray-800/60">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">車手排名</h2>
-                <div className="flex gap-2 items-center">
-                  <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="px-2 py-1 rounded">
-                    <option>All</option>
-                    {TEAMS.map((t) => (
-                      <option key={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-2 py-1 rounded">
-                    <option value="points">Sort: Points</option>
-                    <option value="name">Sort: Name</option>
-                  </select>
-                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search driver..." className="px-2 py-1 rounded border" />
-                </div>
-              </div>
+// ===== Dummy Data =====
+const races = [
+  {
+    id: 1,
+    name: "巴林站 Bahrain GP",
+    date: "2025-03-14T18:00:00+03:00",
+  },
+  {
+    id: 2,
+    name: "沙烏地阿拉伯站 Saudi GP",
+    date: "2025-03-21T20:00:00+03:00",
+  },
+];
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredDrivers.map((d) => (
-                  <motion.article key={d.id} whileHover={{ scale: 1.02 }} className="p-4 rounded-xl border shadow-md bg-white/70 dark:bg-gray-800/70 flex items-center gap-4 hover:shadow-xl transition-all">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold">{d.name}</h3>
-                        <div className="text-sm opacity-70">{d.points} pts</div>
-                      </div>
-                      <div className="text-sm opacity-60">{d.team} • {d.country}</div>
-                    </div>
-                    <div>
-                      <button className="px-3 py-1 rounded border text-sm">Details</button>
-                    </div>
-                  </motion.article>
-                ))}
-              </div>
-            </motion.div>
+const drivers = [
+  { id: 1, name: "Max Verstappen", team: "Red Bull Racing", bio: "三屆世界冠軍" },
+  { id: 2, name: "Lewis Hamilton", team: "Ferrari (2025)", bio: "七屆世界冠軍" },
+];
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 rounded-2xl shadow-lg border bg-white/60 backdrop-blur dark:bg-gray-800/60">
-              <h2 className="text-xl font-semibold mb-3">最新賽事動態</h2>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center font-bold">R</div>
-                  <div>
-                    <div className="font-semibold">Red Bull clinches double podium</div>
-                    <div className="text-sm opacity-70">賽後報導摘要 — 簡短敘述示範內容。</div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center font-bold">M</div>
-                  <div>
-                    <div className="font-semibold">Mercedes upgrades revealed</div>
-                    <div className="text-sm opacity-70">車隊技術更新，影響下一站表現。</div>
-                  </div>
-                </li>
-              </ul>
-            </motion.div>
+// ===== Home Page =====
+function Home() {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <h1 className="text-4xl font-bold mb-6">F1 線上資訊站</h1>
+      <h2 className="text-2xl font-semibold mb-4">下一場比賽倒數</h2>
 
-          </section>
+      <Card className="p-6 mb-10">
+        <CardContent>
+          <p className="text-xl mb-2">{races[0].name}</p>
+          <Countdown target={races[0].date} />
+        </CardContent>
+      </Card>
 
-          <aside className="space-y-8">
-            <div className="p-4 rounded-2xl border shadow-sm">
-              <h3 className="font-semibold mb-3">即將到來的比賽</h3>
-              <ul className="space-y-2">
-                {upcomingRaces.map((r) => (
-                  <li key={r.id} className="text-sm">
-                    <div className="font-semibold">{r.name}</div>
-                    <div className="opacity-70">{formatDate(r.date)} • {r.country}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-2">比賽列表</h3>
+            <Link to="/races" className="text-blue-400 underline">
+              查看所有比賽 →
+            </Link>
+          </CardContent>
+        </Card>
 
-            <div className="p-4 rounded-2xl border shadow-sm">
-              <h3 className="font-semibold mb-3">車隊積分 (快速檢視)</h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="opacity-70 text-left"><th>Team</th><th className="text-right">Pts</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Red Bull</td><td className="text-right">841</td></tr>
-                  <tr><td>Mercedes</td><td className="text-right">602</td></tr>
-                  <tr><td>McLaren</td><td className="text-right">430</td></tr>
-                </tbody>
-              </table>
-            </div>
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-2">車手介紹</h3>
+            <Link to="/drivers" className="text-blue-400 underline">
+              查看所有車手 →
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
+  );
+}
 
-            <div className="p-4 rounded-2xl border shadow-sm">
-              <h3 className="font-semibold mb-3">快速操作</h3>
-              <div className="flex flex-col gap-2">
-                <button className="px-3 py-2 rounded">切換按鈕示範</button>
-                <button className="px-3 py-2 rounded">下載賽程 (CSV)</button>
-              </div>
-            </div>
-          </aside>
-        </main>
-
-        <footer className="mt-12 text-center opacity-70 text-sm"
-          <div>這是示範網站 — 若要串接真實資料，可改用 Ergast/F1 API 或官方資料源。</div>
-          <div className="mt-2">部署提示：將此檔案整合成 React app (create-react-app / Vite) 後推到 GitHub 並啟用 GitHub Pages。</div>
-        </footer>
+// ===== Drivers Page =====
+function Drivers() {
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-6">車手列表</h1>
+      <div className="grid md:grid-cols-2 gap-4">
+        {drivers.map((d) => (
+          <Card key={d.id}>
+            <CardContent className="p-4">
+              <h2 className="text-xl font-semibold">{d.name}</h2>
+              <p className="opacity-70">{d.team}</p>
+              <Link
+                to={`/driver/${d.id}`}
+                className="text-blue-400 underline"
+              >
+                查看詳情
+              </Link>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
 }
 
-/*
-Deployment steps (簡短說明)：
-1) 用 Vite 或 Create React App 建專案：
-   npx create-react-app f1-site
-   或
-   npm create vite@latest f1-site -- --template react
-2) 把這個檔案放在 src/components/F1Site.jsx，並在 src/App.jsx 中 import 並 render。
-3) 本地測試： npm install && npm run dev 或 npm start
-4) 推到 GitHub：
-   git init
-   git add .
-   git commit -m "Initial F1 site"
-   git remote add origin https://github.com/your-username/your-repo.git
-   git push -u origin main
-5) 在 GitHub repo 設定 -> Pages，選擇 main branch / root 或使用 gh-pages branch。
-   或使用 GitHub Actions 自動部署（有官方 template）。
+// ===== Driver Detail Page =====
+function DriverDetail() {
+  const { id } = useParams();
+  const driver = drivers.find((d) => d.id === Number(id));
+  if (!driver) return <p>找不到車手</p>;
 
-要我幫你把此專案轉成「一個可以直接放到 GitHub Pages 的靜態資料夾 (index.html + assets)」或直接產生完整 repo 結構，請告訴我你想要哪一種（我可以把檔案輸出為可下載的 zip）。
-*/
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-4">{driver.name}</h1>
+      <p className="text-lg mb-2">車隊：{driver.team}</p>
+      <p className="opacity-70">{driver.bio}</p>
+    </div>
+  );
+}
 
-           
+// ===== Races Page =====
+function Races() {
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-6">F1 2025 賽季賽程</h1>
+      <div className="grid gap-4">
+        {races.map((r) => (
+          <Card key={r.id}>
+            <CardContent className="p-4">
+              <h2 className="text-xl font-semibold">{r.name}</h2>
+              <p className="opacity-70">{new Date(r.date).toLocaleString()}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===== Main App =====
+export default function App() {
+  const [dark, setDark] = useState(false);
+
+  return (
+    <div className={dark ? "dark" : ""}>
+      <div className="min-h-screen p-8 bg-white dark:bg-black dark:text-white transition">
+        <Router>
+          <ThemeToggle dark={dark} setDark={setDark} />
+
+          <nav className="flex gap-6 mb-8 text-xl">
+            <Link to="/">🏎️ 首頁</Link>
+            <Link to="/races">📅 賽程</Link>
+            <Link to="/drivers">👨‍🚀 車手</Link>
+          </nav>
+
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/races" element={<Races />} />
+            <Route path="/drivers" element={<Drivers />} />
+            <Route path="/driver/:id" element={<DriverDetail />} />
+          </Routes>
+        </Router>
+      </div>
+    </div>
+  );
+}
+```
+
+
+
+             
+  
