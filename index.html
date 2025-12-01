@@ -2,41 +2,252 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>F1 資訊看板（純 HTML）</title>
-  <meta name="description" content="F1 賽程、車手與積分一覽（純 HTML / CSS / JS）" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F1 資訊站（Single-file）</title>
+  <meta name="description" content="單檔 HTML，含圖片、連結、賽曆、車隊與車手卡片與圖片燈箱，可直接上傳到 GitHub Pages。" />
   <style>
-    :root{
-      --bg:#f7fafc; --card:#ffffff; --muted:#6b7280; --accent:#111827; --glass: rgba(255,255,255,0.6);
-      --radius:16px; --gap:18px;
+    :root{--bg:#0b1020;--card:#0f1724;--muted:#9aa4bf;--accent:#ff4136}
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{margin:0;background:linear-gradient(180deg,#071028 0%, #09121c 60%);color:#e7eef9}
+    header{padding:20px 24px;display:flex;align-items:center;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{width:44px;height:44px;border-radius:6px}
+    .brand h1{font-size:20px;margin:0}
+    nav{margin-left:auto}
+    nav a{color:var(--muted);text-decoration:none;margin-left:12px}
+    .container{max-width:1150px;margin:18px auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px}
+    .search{display:flex;gap:8px}
+    input.searchbox{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(200,210,230,0.06);background:transparent;color:inherit}
+    button{background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .list{display:grid;gap:12px;margin-top:12px}
+    .card-row{display:flex;gap:12px;align-items:center}
+    .thumb{width:96px;height:64px;flex-shrink:0;border-radius:8px;overflow:hidden}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .meta{flex:1}
+    h2,h3{margin:0 0 6px 0}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:999px;font-size:13px;color:var(--muted)}
+    .right-column .card{position:sticky;top:18px}
+    .drivers{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .driver-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+    .driver-card img{width:100%;height:120px;object-fit:cover;border-radius:8px}
+    .driver-card a{color:var(--accent);text-decoration:none}
+    .calendar table{width:100%;border-collapse:collapse}
+    .calendar th,.calendar td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);text-align:left;font-size:14px}
+    footer{padding:18px;text-align:center;color:var(--muted)}
+    /* Lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(2,6,23,0.9);display:none;align-items:center;justify-content:center;padding:24px}
+    .lightbox.show{display:flex}
+    .lightbox .inner{max-width:900px;width:100%;}
+    .lightbox img{width:100%;height:auto;border-radius:8px}
+    .close{position:absolute;right:20px;top:20px;font-size:18px;background:rgba(255,255,255,0.04);padding:8px;border-radius:8px;border:0;color:var(--muted);cursor:pointer}
+    @media(max-width:880px){.grid{grid-template-columns:1fr}.right-column{order:2}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="https://via.placeholder.com/88x88.png?text=F1" alt="F1 logo" />
+      <div>
+        <h1>F1 資訊站</h1>
+        <div style="color:var(--muted);font-size:13px">單檔 HTML / 可部署於 GitHub Pages</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#drivers">車手</a>
+      <a href="#teams">車隊</a>
+      <a href="#calendar">賽曆</a>
+      <a href="#standings">積分</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <div>
+        <section class="card">
+          <div class="search">
+            <input id="search" class="searchbox" placeholder="搜尋車手、車隊或賽站（例：Hamilton、Ferrari、Monaco）" />
+            <button id="clear">清除</button>
+          </div>
+
+          <div class="list" id="results"></div>
+        </section>
+
+        <section id="drivers" style="margin-top:16px">
+          <h2>熱門車手</h2>
+          <div class="drivers" id="drivers-list" style="margin-top:10px"></div>
+        </section>
+
+        <section id="calendar" style="margin-top:18px" class="card calendar">
+          <h2>賽季賽曆</h2>
+          <table id="calendar-table">
+            <thead><tr><th>日期</th><th>分站</th><th>國家/場地</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </section>
+
+        <section id="standings" style="margin-top:18px" class="card">
+          <h2>積分榜（示例）</h2>
+          <div class="chips" id="standings-list"></div>
+        </section>
+
+      </div>
+
+      <aside class="right-column">
+        <div class="card">
+          <h3>即時新聞（範例連結）</h3>
+          <div class="card-row" style="flex-direction:column;align-items:flex-start">
+            <a href="https://www.formula1.com/" target="_blank" rel="noopener">公式網站 — Formula1.com</a>
+            <a href="https://en.wikipedia.org/wiki/Formula_One" target="_blank" rel="noopener">Wikipedia — Formula One</a>
+            <a href="https://www.fia.com/" target="_blank" rel="noopener">FIA（國際汽車總會）</a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>車隊一覽</h3>
+          <div id="teams-preview" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>說明</h3>
+          <p style="color:var(--muted);font-size:14px">此單檔包含：車手卡（圖片、國家、所屬車隊）、賽曆表、積分展示、圖片燈箱與外部連結。直接上傳到 GitHub 並啟用 GitHub Pages 即可公開。圖片與內容可在 <code>DATA</code> 區塊修改。</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="lightbox" id="lightbox">
+    <button class="close" id="lb-close">✕</button>
+    <div class="inner">
+      <img id="lb-img" src="" alt=""/>
+      <div style="margin-top:8px;color:var(--muted)" id="lb-caption"></div>
+    </div>
+  </div>
+
+  <footer>
+    資料示例由本地 DATA 區塊提供 - 請自行替換為官方來源以保持即時性。
+  </footer>
+
+  <script>
+    /***** DATA: 在這裡替換或擴充資料（車手、車隊、賽曆、積分） *****/
+    const DATA = {
+      drivers: [
+        {id:1, name:'Lewis Hamilton', team:'Mercedes', country:'UK', img:'./images/hamilton.jpg', bio:'七屆世界冠軍（示例）', link:'https://en.wikipedia.org/wiki/Lewis_Hamilton'},
+        {id:2, name:'Max Verstappen', team:'Red Bull Racing', country:'Netherlands', img:'./images/verstappen.jpg', bio:'世界冠軍（示例）', link:'https://en.wikipedia.org/wiki/Max_Verstappen'},
+        {id:3, name:'Charles Leclerc', team:'Ferrari', country:'Monaco', img:'./images/leclerc.jpg', bio:'法拉利一號車手（示例）', link:'https://en.wikipedia.org/wiki/Charles_Leclerc'},
+        {id:4, name:'Lando Norris', team:'McLaren', country:'UK', img:'./images/norris.jpg', bio:'McLaren 車手（示例）', link:'https://en.wikipedia.org/wiki/Lando_Norris'}
+      ],
+      teams: [
+        {name:'Mercedes', img:'./images/mercedes.jpg', link:'https://www.mercedesamgf1.com'},
+        {name:'Red Bull Racing', img:'./images/redbull.jpg', link:'https://www.redbullracing.com'},
+        {name:'Ferrari', img:'./images/ferrari.jpg', link:'https://www.ferrari.com'},
+        {name:'McLaren', img:'./images/mclaren.jpg', link:'https://www.mclaren.com'}
+      ],
+      calendar: [
+        {date:'2026-03-08', round:'1', name:'Bahrain Grand Prix', venue:'Bahrain International Circuit'},
+        {date:'2026-03-22', round:'2', name:'Saudi Arabian Grand Prix', venue:'Jeddah Corniche Circuit'},
+        {date:'2026-05-24', round:'7', name:'Monaco Grand Prix', venue:'Circuit de Monaco'}
+      ],
+      standings: [
+        {rank:1, name:'Max Verstappen', pts:480},
+        {rank:2, name:'Lewis Hamilton', pts:320}
+      ]
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:var(--accent);}
-    .container{max-width:1200px;margin:28px auto;padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-    h1{font-size:28px;margin:0}
-    .muted{color:var(--muted)}
 
-    .searchBox{display:flex;gap:10px;align-items:center}
-    .input{padding:10px 14px;border-radius:999px;border:1px solid rgba(15,23,42,0.06);background:var(--card);min-width:240px}
-    .season{padding:8px 12px;border-radius:12px;background:var(--card);box-shadow:0 1px 4px rgba(2,6,23,0.04);display:flex;gap:8px;align-items:center}
+    /***** 渲染函式 *****/
+    function el(tag, attrs={}, children=[]) { const e = document.createElement(tag); for(const k in attrs){ if(k==='html') e.innerHTML=attrs[k]; else e.setAttribute(k, attrs[k]); } for(const c of children) e.appendChild(c); return e }
 
-    .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
-    .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.04)}
-    .sectionTitle{font-weight:600;margin:0 0 8px 0}
+    function renderDrivers(){
+      const container = document.getElementById('drivers-list'); container.innerHTML='';
+      DATA.drivers.forEach(d => {
+        const card = el('div',{class:'driver-card card'});
+        const img = el('img',{src:d.img, alt:d.name, title:d.name});
+        img.addEventListener('click', ()=>openLightbox(d.img, `<strong>${d.name}</strong> — ${d.team} — ${d.country}<br>${d.bio}<br><a href='${d.link}' target='_blank'>更多</a>`));
+        const name = el('div',{html:`<strong><a href='${d.link}' target='_blank'>${d.name}</a></strong>`});
+        const meta = el('div',{html:`<div style='color:var(--muted);font-size:13px'>${d.team} • ${d.country}</div>`});
+        card.append(img,name,meta);
+        container.appendChild(card);
+      })
+    }
 
-    /* schedule list */
-    .races{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .race{padding:12px;border-radius:12px;border:1px solid rgba(15,23,42,0.04)}
-    .race .round{font-size:12px;color:var(--muted)}
-    .race .name{font-weight:600}
+    function renderTeams(){
+      const container = document.getElementById('teams-preview'); container.innerHTML='';
+      DATA.teams.forEach(t => {
+        const row = el('div',{class:'card-row'});
+        const thumb = el('div',{class:'thumb'});
+        const img = el('img',{src:t.img,alt:t.name});
+        thumb.appendChild(img);
+        const meta = el('div',{class:'meta', html:`<div><strong><a href='${t.link}' target='_blank'>${t.name}</a></strong></div><div style='color:var(--muted);font-size:13px'>點擊圖片放大</div>`});
+        img.style.cursor='pointer'; img.addEventListener('click', ()=>openLightbox(t.img, `<strong>${t.name}</strong> — 官方網站：<a href='${t.link}' target='_blank'>前往</a>`));
+        row.append(thumb,meta);
+        container.appendChild(row);
+      })
+    }
 
-    .fullSchedule{display:flex;flex-direction:column;gap:8px}
-    .raceRow{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;border:1px solid rgba(15,23,42,0.04)}
+    function renderCalendar(){
+      const tbody = document.querySelector('#calendar-table tbody'); tbody.innerHTML='';
+      DATA.calendar.forEach(c =>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.date}</td><td><a href='https://en.wikipedia.org/wiki/${encodeURIComponent(c.name)}' target='_blank'>${c.name}</a></td><td>${c.venue}</td>`;
+        tbody.appendChild(tr);
+      })
+    }
 
-    /* right column */
-    .standings ol{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
-    .standin
-   
-   
-  
+    function renderStandings(){
+      const elst = document.getElementById('standings-list'); elst.innerHTML='';
+      DATA.standings.forEach(s=>{
+        const c = document.createElement('div'); c.className='chip'; c.innerHTML = `#${s.rank} ${s.name} — ${s.pts} pts`;
+        elst.appendChild(c);
+      })
+    }
+
+    function openLightbox(src, caption){
+      const lb = document.getElementById('lightbox'); document.getElementById('lb-img').src = src; document.getElementById('lb-caption').innerHTML = caption; lb.classList.add('show');
+    }
+    document.getElementById('lb-close').addEventListener('click', ()=>document.getElementById('lightbox').classList.remove('show'));
+    document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id==='lightbox') document.getElementById('lightbox').classList.remove('show') })
+
+    // Search
+    const results = document.getElementById('results');
+    function doSearch(q){
+      q = q.trim().toLowerCase(); if(!q){ results.innerHTML=''; return }
+      const matches = [];
+      DATA.drivers.forEach(d=>{ if(d.name.toLowerCase().includes(q) || d.team.toLowerCase().includes(q)) matches.push({type:'driver', item:d}) });
+      DATA.teams.forEach(t=>{ if(t.name.toLowerCase().includes(q)) matches.push({type:'team', item:t}) });
+      DATA.calendar.forEach(c=>{ if(c.name.toLowerCase().includes(q) || c.venue.toLowerCase().includes(q)) matches.push({type:'race', item:c}) });
+      results.innerHTML='';
+      if(matches.length===0){ results.innerHTML = '<div style="color:var(--muted)">找不到結果，請嘗試其他關鍵字。</div>'; return }
+      matches.forEach(m=>{
+        const row = el('div',{class:'card-row card'});
+        if(m.type==='driver'){
+          const thumb = el('div',{class:'thumb'}); thumb.innerHTML = `<img src='${m.item.img}' alt=''/>`;
+          const meta = el('div',{class:'meta', html:`<strong><a href='${m.item.link}' target='_blank'>${m.item.name}</a></strong><div style='color:var(--muted)'>${m.item.team} • ${m.item.country}</div>`});
+          row.append(thumb,meta);
+          row.addEventListener('click', ()=>openLightbox(m.item.img, `<strong>${m.item.name}</strong> — ${m.item.bio}`));
+        } else if(m.type==='team'){
+          const thumb = el('div',{class:'thumb'}); thumb.innerHTML = `<img src='${m.item.img}' alt=''/>`;
+          const meta = el('div',{class:'meta', html:`<strong><a href='${m.item.link}' target='_blank'>${m.item.name}</a></strong><div style='color:var(--muted)'>點擊圖片放大</div>`});
+          row.append(thumb,meta);
+        } else {
+          row.innerHTML = `<div style='flex:1'><strong>${m.item.name}</strong><div style='color:var(--muted)'>${m.item.date} — ${m.item.venue}</div></div>`;
+        }
+        results.appendChild(row);
+      })
+    }
+
+    document.getElementById('search').addEventListener('input', (e)=>doSearch(e.target.value));
+    document.getElementById('clear').addEventListener('click', ()=>{document.getElementById('search').value=''; doSearch('')});
+
+    // 初始渲染
+    renderDrivers(); renderTeams(); renderCalendar(); renderStandings();
+
+    // Export helper：把 DATA 轉為 JSON，方便更新或與 GitHub Actions 串接
+    window.getDATAJSON = ()=>JSON.stringify(DATA, null, 2);
+
+  </script>
+</body>
+</html>
+
+ 
